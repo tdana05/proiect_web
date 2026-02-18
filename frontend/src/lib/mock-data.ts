@@ -109,6 +109,7 @@ export const mockUsers: User[] = [
         eventsAttended: 5,
     },
 ];
+
 // ============ EVENTS ============
 export const mockEvents: Event[] = [
     {
@@ -191,6 +192,7 @@ export const mockEvents: Event[] = [
         color: "#0891b2",
     },
 ];
+
 // ============ ANNOUNCEMENTS ============
 export const mockAnnouncements: Announcement[] = [
     {
@@ -239,6 +241,7 @@ export const mockAnnouncements: Announcement[] = [
         pinned: false,
     },
 ];
+
 // ============ TASKS ============
 export const mockTasks: Task[] = [
     {
@@ -338,6 +341,7 @@ export const mockTasks: Task[] = [
         category: "HR",
     },
 ];
+
 // ============ HOURS ENTRIES ============
 export const mockHoursEntries: HoursEntry[] = [
     {
@@ -432,6 +436,7 @@ export const mockHoursEntries: HoursEntry[] = [
         status: "pending",
     },
 ];
+
 // ============ PROJECTS ============
 export const mockProjects: Project[] = [
     {
@@ -490,6 +495,7 @@ export const mockProjects: Project[] = [
         progress: 100,
     },
 ];
+
 // ============ DOCUMENTS ============
 export const mockDocuments: Document[] = [
     {

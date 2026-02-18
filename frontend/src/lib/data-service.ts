@@ -158,6 +158,7 @@ export function updateTaskStatus(
             };
         }
     }
+
     // Valid transitions
     const validTransitions: Record<TaskStatus, TaskStatus[]> = {
         PLANNED: ["IN_PROGRESS"],
