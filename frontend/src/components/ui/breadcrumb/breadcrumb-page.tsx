@@ -1,0 +1,21 @@
+import * as React from 'react'
+import { cn } from '@/lib/utils'
+
+function BreadcrumbPage(
+    props: React.ComponentProps<'span'>
+) {
+    const { className, ...rest } = props
+
+    return (
+        <span
+            data-slot="breadcrumb-page"
+            role="link"
+            aria-disabled="true"
+            aria-current="page"
+            className={cn('text-foreground font-normal', className)}
+            {...rest}
+        />
+    )
+}
+
+export { BreadcrumbPage }
