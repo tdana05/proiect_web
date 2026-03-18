@@ -1,15 +1,26 @@
-"use client"
+'use client'
 
-import { Toaster as Sonner } from "sonner"
+import { useTheme } from 'next-themes'
+import { Toaster as Sonner } from 'sonner'
+import type { ToasterProps } from 'sonner'
 
-type ToasterProps = React.ComponentProps<typeof Sonner>
+const Toaster = ({ ...props }: ToasterProps) => {
+    const { theme = 'system' } = useTheme()
 
-export function Toaster(props: ToasterProps) {
     return (
         <Sonner
-            theme="system"
+            theme={theme as ToasterProps['theme']}
             className="toaster group"
+            style={
+                {
+                    '--normal-bg': 'var(--popover)',
+                    '--normal-text': 'var(--popover-foreground)',
+                    '--normal-border': 'var(--border)',
+                } as React.CSSProperties
+            }
             {...props}
         />
     )
 }
+
+export { Toaster }
