@@ -79,13 +79,13 @@ export function CalendarGrid({
                     {MONTHS_RO[currentMonth]} {currentYear}
                 </CardTitle>
                 <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="size-8" onClick={onPrevMonth}>
+                    <Button variant="outline" size="sm" className="size-8" onClick={onPrevMonth}>
                         <ChevronLeft className="size-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={onToday}>
+                    <Button variant="outline" size="sm" onClick={onToday}>
                         Azi
                     </Button>
-                    <Button variant="ghost" size="icon" className="size-8" onClick={onNextMonth}>
+                    <Button variant="outline" size="sm" className="size-8" onClick={onNextMonth}>
                         <ChevronRight className="size-4" />
                     </Button>
                 </div>

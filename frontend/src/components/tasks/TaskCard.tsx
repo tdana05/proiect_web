@@ -60,7 +60,7 @@ export function TaskCard({
                                     {task.category}
                                 </Badge>
                                 {isOverdue && (
-                                    <Badge variant="destructive" className="text-[10px]">
+                                    <Badge variant="outline" className="text-[10px] text-destructive border-destructive/50">
                                         Intarziat
                                     </Badge>
                                 )}
@@ -95,9 +95,9 @@ export function TaskCard({
                             )}
                             {isAdmin && (
                                 <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="size-8 text-muted-foreground hover:text-destructive"
+                                    variant="outline"
+                                    size="sm"
+                                    className="size-8 p-0 text-muted-foreground hover:text-destructive"
                                     onClick={() => onDelete(task.id)}
                                 >
                                     <Trash2 className="size-4" />

@@ -2,7 +2,8 @@
 
 import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
-import { cva, VariantProps } from 'class-variance-authority'
+import { cva } from 'class-variance-authority'
+import type { VariantProps } from 'class-variance-authority'
 import { PanelLeftIcon } from 'lucide-react'
 
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -81,16 +82,19 @@ function SidebarProvider({
             } else {
                 _setOpen(openState)
             }
-
-            // This sets the cookie to keep the sidebar state.
+            
+            
             document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
         },
         [setOpenProp, open],
     )
-
-    // Helper to toggle the sidebar.
+    
     const toggleSidebar = React.useCallback(() => {
-        return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open)
+        if (isMobile) {
+            setOpenMobile((open) => !open)
+        } else {
+            setOpen((open) => !open)
+        }
     }, [isMobile, setOpen, setOpenMobile])
 
     // Adds a keyboard shortcut to toggle the sidebar.
@@ -109,8 +113,7 @@ function SidebarProvider({
         return () => window.removeEventListener('keydown', handleKeyDown)
     }, [toggleSidebar])
 
-    // We add a state so that we can do data-state="expanded" or "collapsed".
-    // This makes it easier to style the sidebar with Tailwind classes.
+    
     const state = open ? 'expanded' : 'collapsed'
 
     const contextValue = React.useMemo<SidebarContextProps>(

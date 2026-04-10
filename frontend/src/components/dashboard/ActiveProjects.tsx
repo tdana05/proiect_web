@@ -21,7 +21,7 @@ export function ActiveProjects({ projects }: ActiveProjectsProps) {
                         Proiecte Active
                     </CardTitle>
                 </div>
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild>
                     <Link href="/dashboard/projects">
                         Toate <ArrowRight className="ml-1 size-3" />
                     </Link>

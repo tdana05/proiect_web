@@ -1,9 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { STATUS_COLORS } from "@/types/statistics";
 
 interface TasksPieChartProps {
-    data: any[];
+    data: Array<{
+        name: string;
+        value: number;
+        status: string;
+        color?: string;
+    }>;
 }
 
 const CustomTooltip = ({ active, payload }: any) => {
@@ -12,9 +17,9 @@ const CustomTooltip = ({ active, payload }: any) => {
             <div className="rounded-lg border border-border bg-background p-2 shadow-sm">
                 <p className="text-sm font-medium text-foreground">{payload[0].name}</p>
                 <p className="text-xs text-muted-foreground">
-                    Task-uri: <span className="font-bold" style={{ color: payload[0].payload.color }}>
-            {payload[0].value}
-          </span>
+                    Task-uri: <span className="font-bold" style={{ color: payload[0].payload.fill }}>
+                        {payload[0].value}
+                    </span>
                 </p>
             </div>
         );
@@ -23,6 +28,12 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export function TasksPieChart({ data }: TasksPieChartProps) {
+    // Pregătim datele cu culori incluse pe baza status-ului
+    const chartData = data.map((item) => ({
+        ...item,
+        fill: STATUS_COLORS[item.status as keyof typeof STATUS_COLORS] || "#888888"
+    }));
+
     return (
         <Card>
             <CardHeader>
@@ -34,18 +45,15 @@ export function TasksPieChart({ data }: TasksPieChartProps) {
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Pie
-                                data={data}
+                                data={chartData}
                                 cx="50%"
                                 cy="50%"
                                 innerRadius={60}
                                 outerRadius={100}
                                 paddingAngle={3}
                                 dataKey="value"
-                            >
-                                {data.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.status as keyof typeof STATUS_COLORS]} />
-                                ))}
-                            </Pie>
+                                nameKey="name"
+                            />
                             <Tooltip content={<CustomTooltip />} />
                             <Legend
                                 formatter={(value) => (

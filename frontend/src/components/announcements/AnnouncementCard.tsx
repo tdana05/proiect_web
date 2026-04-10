@@ -41,8 +41,8 @@ export function AnnouncementCard({ announcement, isAdmin, onDelete }: Announceme
                         </div>
                         {isAdmin && (
                             <Button
-                                variant="ghost"
-                                size="icon"
+                                variant="outline"
+                                size="sm"
                                 className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
                                 onClick={() => onDelete(announcement.id)}
                             >

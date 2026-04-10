@@ -1,9 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { HOURS_STATUS_COLORS } from "@/types/statistics";
 
 interface HoursStatusPieChartProps {
-    data: any[];
+    data: Array<{
+        name: string;
+        value: number;
+        color?: string;
+    }>;
 }
 
 const CustomTooltip = ({ active, payload }: any) => {
@@ -12,9 +16,9 @@ const CustomTooltip = ({ active, payload }: any) => {
             <div className="rounded-lg border border-border bg-background p-2 shadow-sm">
                 <p className="text-sm font-medium text-foreground">{payload[0].name}</p>
                 <p className="text-xs text-muted-foreground">
-                    Ore: <span className="font-bold" style={{ color: payload[0].payload.color }}>
-            {payload[0].value}
-          </span>
+                    Ore: <span className="font-bold" style={{ color: payload[0].payload.color || payload[0].color }}>
+                        {payload[0].value}
+                    </span>
                 </p>
             </div>
         );
@@ -23,6 +27,12 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export function HoursStatusPieChart({ data }: HoursStatusPieChartProps) {
+    // Pregătim datele cu culori incluse
+    const chartData = data.map((item, index) => ({
+        ...item,
+        fill: HOURS_STATUS_COLORS[index]?.color || "#888888"
+    }));
+
     return (
         <Card>
             <CardHeader>
@@ -34,18 +44,15 @@ export function HoursStatusPieChart({ data }: HoursStatusPieChartProps) {
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Pie
-                                data={data}
+                                data={chartData}
                                 cx="50%"
                                 cy="50%"
                                 innerRadius={60}
                                 outerRadius={100}
                                 paddingAngle={3}
                                 dataKey="value"
-                            >
-                                {data.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={HOURS_STATUS_COLORS[index].color} />
-                                ))}
-                            </Pie>
+                                nameKey="name"
+                            />
                             <Tooltip content={<CustomTooltip />} />
                             <Legend
                                 formatter={(value) => (

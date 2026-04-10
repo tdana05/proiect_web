@@ -96,9 +96,9 @@ export function HoursTableRow({
                     )}
                     {isAdmin && (
                         <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-7"
+                            variant="outline"
+                            size="sm"
+                            className="size-7 p-0"
                             onClick={() => onEdit(entry)}
                         >
                             <Edit3 className="size-3" />

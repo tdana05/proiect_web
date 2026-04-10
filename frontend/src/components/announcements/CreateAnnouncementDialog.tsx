@@ -76,7 +76,7 @@ export function CreateAnnouncementDialog({
                             <Label>Prioritate</Label>
                             <Select
                                 value={formData.priority}
-                                onValueChange={(v) => setFormData({ ...formData, priority: v as Announcement["priority"] })}
+                                onValueChange={(v: string) => setFormData({ ...formData, priority: v as Announcement["priority"] })}
                             >
                                 <SelectTrigger>
                                     <SelectValue />
@@ -93,7 +93,7 @@ export function CreateAnnouncementDialog({
                             <div className="flex items-center gap-2 pt-2">
                                 <Switch
                                     checked={formData.pinned}
-                                    onCheckedChange={(v) => setFormData({ ...formData, pinned: v })}
+                                    onCheckedChange={(v: boolean) => setFormData({ ...formData, pinned: v })}
                                 />
                                 <span className="text-sm text-muted-foreground">
                   {formData.pinned ? "Fixat" : "Nefixat"}

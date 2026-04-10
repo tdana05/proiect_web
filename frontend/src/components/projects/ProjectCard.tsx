@@ -28,9 +28,9 @@ export function ProjectCard({ project, isAdmin, onSelect, onDelete }: ProjectCar
                     </Badge>
                     {isAdmin && (
                         <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-7 text-muted-foreground hover:text-destructive"
+                            variant="outline"
+                            size="sm"
+                            className="size-7 p-0 text-muted-foreground hover:text-destructive"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onDelete(project.id);

@@ -1,16 +1,18 @@
-import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { STATUS_STYLES, formatTaskDueDate, formatStatusLabel } from "@/types/dashboard";
 import type { Task } from "@/lib/types";
+import { useNavigate } from "react-router-dom";
+
 
 interface MyTasksProps {
     tasks: Task[];
 }
 
 export function MyTasks({ tasks }: MyTasksProps) {
+    const navigate = useNavigate();
     return (
         <Card className="lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between">
@@ -18,10 +20,13 @@ export function MyTasks({ tasks }: MyTasksProps) {
                     <CardTitle className="text-base">Task-urile Mele</CardTitle>
                     <CardDescription>Task-uri active asignate tie</CardDescription>
                 </div>
-                <Button variant="ghost" size="sm" asChild>
-                    <Link href="/dashboard/tasks">
-                        Toate <ArrowRight className="ml-1 size-3" />
-                    </Link>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-0 hover:bg-accent"
+                    onClick={() => navigate("/dashboard/tasks")}
+                >
+                    Toate <ArrowRight className="ml-1 size-3" />
                 </Button>
             </CardHeader>
             <CardContent>

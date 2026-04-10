@@ -69,7 +69,12 @@ export function EventDetailDialog({
                     </div>
                     {isAdmin && (
                         <div className="flex justify-end pt-2">
-                            <Button variant="destructive" size="sm" onClick={() => onDelete(event.id)}>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-destructive hover:text-destructive border-destructive/20 hover:border-destructive/50 hover:bg-destructive/10"
+                                onClick={() => onDelete(event.id)}
+                            >
                                 <Trash2 className="mr-2 size-3" />
                                 Sterge
                             </Button>

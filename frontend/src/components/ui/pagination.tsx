@@ -8,7 +8,9 @@ import {
 import { cn } from '@/lib/utils'
 import { Button, buttonVariants } from '@/components/ui/button'
 
-function Pagination({ className, ...props }: React.ComponentProps<'nav'>) {
+interface PaginationProps extends React.ComponentProps<'nav'> {}
+
+function Pagination({ className, ...props }: PaginationProps) {
     return (
         <nav
             role="navigation"
@@ -20,10 +22,12 @@ function Pagination({ className, ...props }: React.ComponentProps<'nav'>) {
     )
 }
 
+interface PaginationContentProps extends React.ComponentProps<'ul'> {}
+
 function PaginationContent({
                                className,
                                ...props
-                           }: React.ComponentProps<'ul'>) {
+                           }: PaginationContentProps) {
     return (
         <ul
             data-slot="pagination-content"
@@ -33,7 +37,9 @@ function PaginationContent({
     )
 }
 
-function PaginationItem({ ...props }: React.ComponentProps<'li'>) {
+interface PaginationItemProps extends React.ComponentProps<'li'> {}
+
+function PaginationItem({ ...props }: PaginationItemProps) {
     return <li data-slot="pagination-item" {...props} />
 }
 
@@ -45,7 +51,7 @@ type PaginationLinkProps = {
 function PaginationLink({
                             className,
                             isActive,
-                            size = 'icon',
+                            size = 'sm',
                             ...props
                         }: PaginationLinkProps) {
     return (
@@ -55,9 +61,10 @@ function PaginationLink({
             data-active={isActive}
             className={cn(
                 buttonVariants({
-                    variant: isActive ? 'outline' : 'ghost',
+                    variant: isActive ? 'outline' : 'outline',
                     size,
                 }),
+                isActive ? '' : 'border-0 hover:bg-accent',
                 className,
             )}
             {...props}
@@ -65,44 +72,50 @@ function PaginationLink({
     )
 }
 
+interface PaginationPreviousProps extends React.ComponentProps<typeof PaginationLink> {}
+
 function PaginationPrevious({
                                 className,
                                 ...props
-                            }: React.ComponentProps<typeof PaginationLink>) {
+                            }: PaginationPreviousProps) {
     return (
         <PaginationLink
             aria-label="Go to previous page"
-            size="default"
+            size="sm"
             className={cn('gap-1 px-2.5 sm:pl-2.5', className)}
             {...props}
         >
-            <ChevronLeftIcon />
+            <ChevronLeftIcon className="size-4" />
             <span className="hidden sm:block">Previous</span>
         </PaginationLink>
     )
 }
 
+interface PaginationNextProps extends React.ComponentProps<typeof PaginationLink> {}
+
 function PaginationNext({
                             className,
                             ...props
-                        }: React.ComponentProps<typeof PaginationLink>) {
+                        }: PaginationNextProps) {
     return (
         <PaginationLink
             aria-label="Go to next page"
-            size="default"
+            size="sm"
             className={cn('gap-1 px-2.5 sm:pr-2.5', className)}
             {...props}
         >
             <span className="hidden sm:block">Next</span>
-            <ChevronRightIcon />
+            <ChevronRightIcon className="size-4" />
         </PaginationLink>
     )
 }
 
+interface PaginationEllipsisProps extends React.ComponentProps<'span'> {}
+
 function PaginationEllipsis({
                                 className,
                                 ...props
-                            }: React.ComponentProps<'span'>) {
+                            }: PaginationEllipsisProps) {
     return (
         <span
             aria-hidden
@@ -110,9 +123,9 @@ function PaginationEllipsis({
             className={cn('flex size-9 items-center justify-center', className)}
             {...props}
         >
-      <MoreHorizontalIcon className="size-4" />
-      <span className="sr-only">More pages</span>
-    </span>
+            <MoreHorizontalIcon className="size-4" />
+            <span className="sr-only">More pages</span>
+        </span>
     )
 }
 

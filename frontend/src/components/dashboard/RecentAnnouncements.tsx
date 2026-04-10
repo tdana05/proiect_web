@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,11 @@ interface RecentAnnouncementsProps {
     announcements: Announcement[];
 }
 
+import { useRouter } from "next/navigation";
+
 export function RecentAnnouncements({ announcements }: RecentAnnouncementsProps) {
+    const router = useRouter();
+
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -19,10 +22,13 @@ export function RecentAnnouncements({ announcements }: RecentAnnouncementsProps)
                         Anunturi Recente
                     </CardTitle>
                 </div>
-                <Button variant="ghost" size="sm" asChild>
-                    <Link href="/dashboard/announcements">
-                        Toate <ArrowRight className="ml-1 size-3" />
-                    </Link>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-0 hover:bg-accent"
+                    onClick={() => router.push("/dashboard/announcements")}
+                >
+                    Toate <ArrowRight className="ml-1 size-3" />
                 </Button>
             </CardHeader>
             <CardContent>

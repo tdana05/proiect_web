@@ -18,8 +18,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import type { User } from "@/lib/types";
-import type { Task, TaskFormData } from "@/types/tasks";
+import type { User, Task } from "@/lib/types";
+
+interface TaskFormData {
+    title: string;
+    description: string;
+    assigneeId: string;
+    dueDate: string;
+    priority: Task["priority"];
+    category: string;
+}
 
 interface CreateTaskDialogProps {
     open: boolean;
@@ -40,7 +48,6 @@ export function CreateTaskDialog({
                                      onFieldChange,
                                      onSubmit,
                                  }: CreateTaskDialogProps) {
-    // Reset form when dialog closes
     useEffect(() => {
         if (!open) {
             onFieldChange("title", "");

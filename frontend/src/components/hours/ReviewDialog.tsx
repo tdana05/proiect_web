@@ -91,13 +91,18 @@ export function ReviewDialog({
                         />
                     </div>
                     <div className="flex gap-3 justify-end">
-                        <Button variant="destructive" onClick={() => onReject(entry.id)}>
+                        <Button
+                            variant="outline"
+                            onClick={() => onReject(entry.id)}
+                            className="text-destructive hover:text-destructive border-destructive/20 hover:border-destructive/50 hover:bg-destructive/10"
+                        >
                             <XCircle className="mr-2 size-4" />
                             Respinge
                         </Button>
                         <Button
                             onClick={() => onApprove(entry.id)}
-                            className="bg-success text-success-foreground hover:bg-success/90"
+                            variant="outline"
+                            className="text-success hover:text-success border-success/20 hover:border-success/50 hover:bg-success/10"
                         >
                             <CheckCircle2 className="mr-2 size-4" />
                             Aproba

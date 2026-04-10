@@ -1,6 +1,7 @@
 import { Download, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { TableRow, TableCell } from "@/components/ui/table";
 import { getUserById } from "@/lib/data-service";
 import { TYPE_ICONS, CATEGORY_LABELS } from "@/types/documents";
 import type { Document } from "@/lib/types";
@@ -37,14 +38,18 @@ export function DocumentRow({ document, isAdmin, onDelete }: DocumentRowProps) {
             </TableCell>
             <TableCell className="text-right">
                 <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="icon" className="size-8">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="size-8 p-0"
+                    >
                         <Download className="size-4" />
                     </Button>
                     {isAdmin && (
                         <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-8 text-muted-foreground hover:text-destructive"
+                            variant="outline"
+                            size="sm"
+                            className="size-8 p-0 text-muted-foreground hover:text-destructive"
                             onClick={() => onDelete(document.id)}
                         >
                             <Trash2 className="size-4" />

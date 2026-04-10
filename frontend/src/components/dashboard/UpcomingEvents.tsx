@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { formatEventDate } from "@/types/dashboard";
 import type { Event } from "@/lib/types";
 
@@ -10,6 +10,8 @@ interface UpcomingEventsProps {
 }
 
 export function UpcomingEvents({ events }: UpcomingEventsProps) {
+    const router = useRouter();
+
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -17,10 +19,13 @@ export function UpcomingEvents({ events }: UpcomingEventsProps) {
                     <CardTitle className="text-base">Evenimente Viitoare</CardTitle>
                     <CardDescription>Urmatoarele activitati planificate</CardDescription>
                 </div>
-                <Button variant="ghost" size="sm" asChild>
-                    <Link href="/dashboard/calendar">
-                        Calendar <ArrowRight className="ml-1 size-3" />
-                    </Link>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-0 hover:bg-accent"
+                    onClick={() => router.push("/dashboard/calendar")}
+                >
+                    Calendar <ArrowRight className="ml-1 size-3" />
                 </Button>
             </CardHeader>
             <CardContent>
