@@ -10,7 +10,9 @@ namespace VolunteerManagement.BusinessLayer
             return new AnnouncementExecution();
         }
 
-        // Aici se va adăuga și celelalte acțiuni pentru:
-        // UserAction, EventAction, TaskAction, ProjectAction, HoursAction, DocumentAction
+        public IUserAction UserAction()
+        {
+            return new UserExecution();
+        }
     }
 }

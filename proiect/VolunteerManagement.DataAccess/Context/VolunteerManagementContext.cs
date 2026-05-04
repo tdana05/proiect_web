@@ -6,7 +6,7 @@ namespace VolunteerManagement.DataAccess.Context
     public class VolunteerManagementContext : DbContext
     {
         public DbSet<AnnouncementData> Announcements { get; set; }
-
+        public DbSet<UserData> Users { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer("Server=localhost\\SQLEXPRESS;Database=VolunteerManagementDB;Trusted_Connection=True;MultipleActiveResultSets=true;Encrypt=False;");

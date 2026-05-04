@@ -1,19 +1,31 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
-const API_BASE_URL = 'https://localhost:7044/api';
+const API_BASE_URL = 'http://localhost:5044/api';
 
-const apiClient = axios.create({
+const apiClient: AxiosInstance = axios.create({
     baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
+// Interceptor pentru a adăuga token-ul în fiecare request
+apiClient.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('amicus_token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
 // Interceptor pentru gestionarea globală a erorilor
 apiClient.interceptors.response.use(
-    (response) => {
-        return response;
-    },
+    (response) => response,
     (error) => {
         if (error.response) {
             switch (error.response.status) {
@@ -22,6 +34,9 @@ apiClient.interceptors.response.use(
                     break;
                 case 401:
                     console.error('Unauthorized - Te rugăm să te autentifici');
+                    localStorage.removeItem('amicus_token');
+                    localStorage.removeItem('amicus_session');
+                    window.location.href = '/login';
                     break;
                 case 403:
                     console.error('Forbidden - Nu ai permisiunea necesară');
