@@ -1,53 +1,76 @@
-import { useMemo } from 'react'
-import { Users, Clock, ListTodo, Calendar } from 'lucide-react'
-import { Card } from '../ui/Card'
-import { dataService } from '../../services/dataService'
+import { useState, useEffect } from 'react';
+import { Users, Clock, ListTodo, Calendar, Hourglass } from 'lucide-react';
+import { Card } from '../ui/Card';
+import { dashboardService } from '../../services/dashboardService';
 
 interface Props {
-  userId: string
-  isAdmin: boolean
+  userId: string;
+  isAdmin: boolean;
 }
 
 export function DashboardStats({ userId, isAdmin }: Props) {
-  const stats = useMemo(() => {
-    const tasks = dataService.getTasks()
-    const hours = dataService.getHoursEntries()
-    const events = dataService.getEvents()
-    const users = dataService.getUsers()
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-    if (isAdmin) {
-      return [
-        { label: 'Total Voluntari', value: users.filter(u => u.role === 'volunteer').length, icon: Users, color: 'text-blue-500' },
-        { label: 'Ore Aprobate', value: hours.filter(h => h.status === 'approved').reduce((s, h) => s + h.hours, 0), icon: Clock, color: 'text-green-500' },
-        { label: 'Task-uri Active', value: tasks.filter(t => t.status !== 'DONE').length, icon: ListTodo, color: 'text-amber-500' },
-        { label: 'Evenimente Viitoare', value: events.filter(e => new Date(e.date) > new Date()).length, icon: Calendar, color: 'text-purple-500' },
-      ]
-    }
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const data = await dashboardService.getStats(isAdmin ? undefined : userId, isAdmin);
+        setStats(data);
+      } catch (error) {
+        console.error('Failed to load stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadStats();
+  }, [userId, isAdmin]);
 
-    return [
-      { label: 'Orele Mele', value: hours.filter(h => h.volunteerId === userId && h.status === 'approved').reduce((s, h) => s + h.hours, 0), icon: Clock, color: 'text-green-500' },
-      { label: 'Task-uri Active', value: tasks.filter(t => t.assigneeId === userId && t.status !== 'DONE').length, icon: ListTodo, color: 'text-amber-500' },
-      { label: 'Evenimente Viitoare', value: events.filter(e => new Date(e.date) > new Date() && e.attendees.includes(userId)).length, icon: Calendar, color: 'text-purple-500' },
-      { label: 'Task-uri Finalizate', value: tasks.filter(t => t.assigneeId === userId && t.status === 'DONE').length, icon: ListTodo, color: 'text-blue-500' },
-    ]
-  }, [userId, isAdmin])
+  if (loading) {
+    return <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {[...Array(4)].map((_, i) => (
+          <Card key={i} className="h-24 animate-pulse" />
+      ))}
+    </div>;
+  }
+
+  const statItems = isAdmin ? [
+    { label: 'Total Voluntari', value: stats?.totalVolunteers || 0, icon: Users, color: 'text-blue-500' },
+    { label: 'Ore Aprobate', value: stats?.totalApprovedHours || 0, icon: Clock, color: 'text-green-500' },
+    { label: 'Task-uri Active', value: stats?.totalActiveTasks || 0, icon: ListTodo, color: 'text-amber-500' },
+    { label: 'Evenimente', value: stats?.totalUpcomingEvents || 0, icon: Calendar, color: 'text-purple-500' },
+  ] : [
+    { label: 'Orele Mele', value: stats?.myHours || 0, icon: Clock, color: 'text-green-500' },
+    { label: 'Task-uri Active', value: stats?.myActiveTasks || 0, icon: ListTodo, color: 'text-amber-500' },
+    { label: 'Evenimente', value: stats?.myUpcomingEvents || 0, icon: Calendar, color: 'text-purple-500' },
+    { label: 'Finalizate', value: stats?.myCompletedTasks || 0, icon: ListTodo, color: 'text-blue-500' },
+  ];
+
+  if (stats?.pendingHours && stats.pendingHours > 0 && !isAdmin) {
+    statItems.push({
+      label: 'Ore în Așteptare',
+      value: stats.pendingHours,
+      icon: Hourglass,
+      color: 'text-yellow-500'
+    });
+  }
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {stats.map((stat) => {
-        const Icon = stat.icon
-        return (
-          <Card key={stat.label} className="flex items-center gap-4">
-            <div className={`p-3 rounded-lg bg-secondary ${stat.color}`}>
-              <Icon className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{stat.value}</p>
-              <p className="text-sm text-muted-foreground">{stat.label}</p>
-            </div>
-          </Card>
-        )
-      })}
-    </div>
-  )
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {statItems.map((stat) => {
+          const Icon = stat.icon;
+          return (
+              <Card key={stat.label} className="flex items-center gap-4 p-4">
+                <div className={`p-3 rounded-lg bg-secondary ${stat.color}`}>
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{stat.value}</p>
+                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                </div>
+              </Card>
+          );
+        })}
+      </div>
+  );
 }

@@ -14,5 +14,16 @@ namespace VolunteerManagement.BusinessLayer
         {
             return new UserExecution();
         }
+        
+        /*public IDashboardAction DashboardAction()
+        {
+            return new DashboardExecution();
+        }
+        */
+        
+        public IEventAction EventAction()
+        {
+            return new EventExecution();
+        }
     }
 }
