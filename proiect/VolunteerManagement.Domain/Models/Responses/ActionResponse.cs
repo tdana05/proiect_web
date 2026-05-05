@@ -1,4 +1,4 @@
-namespace VolunteerManagement.Domain.Models.Responces
+namespace VolunteerManagement.Domain.Models.Responses
 {
     public class ActionResponse
     {

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using VolunteerManagement.BusinessLayer;
 using VolunteerManagement.BusinessLayer.Interfaces;
 using VolunteerManagement.Domain.Models;
-using VolunteerManagement.Domain.Models.Responces;
+using VolunteerManagement.Domain.Models.Responses;
 
 namespace VolunteerManagement.API.Controllers
 {

@@ -1,6 +1,6 @@
 using VolunteerManagement.Domain.Entities;
 using VolunteerManagement.Domain.Models;
-using VolunteerManagement.Domain.Models.Responces;
+using VolunteerManagement.Domain.Models.Responses;
 using VolunteerManagement.DataAccess.Context;
 
 namespace VolunteerManagement.BusinessLayer.Core

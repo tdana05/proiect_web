@@ -1,5 +1,5 @@
 using VolunteerManagement.Domain.Models;
-using VolunteerManagement.Domain.Models.Responces;
+using VolunteerManagement.Domain.Models.Responses;
 
 namespace VolunteerManagement.BusinessLayer.Interfaces
 {
