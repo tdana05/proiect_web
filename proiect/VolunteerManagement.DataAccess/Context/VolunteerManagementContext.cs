@@ -9,6 +9,8 @@ namespace VolunteerManagement.DataAccess.Context
         public DbSet<UserData> Users { get; set; }
         public DbSet<EventData> Events { get; set; }
         public DbSet<EventAttendeeData> EventAttendees { get; set; }
+        public DbSet<ProjectData> Projects { get; set; }
+        public DbSet<DocumentData> Documents { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

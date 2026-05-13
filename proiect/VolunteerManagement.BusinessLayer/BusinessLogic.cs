@@ -25,5 +25,7 @@ namespace VolunteerManagement.BusinessLayer
         {
             return new EventExecution();
         }
+        public IProjectAction ProjectAction() => new ProjectExecution();
+        public IDocumentAction DocumentAction() => new DocumentExecution();
     }
 }

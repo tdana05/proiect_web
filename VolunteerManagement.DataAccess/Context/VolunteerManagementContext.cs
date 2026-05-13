@@ -19,7 +19,8 @@ namespace VolunteerManagement.DataAccess.Context
     public class VolunteerManagementContext : DbContext
     {
         public DbSet<AnnouncementData> Announcements { get; set; }
-        
+        public DbSet<DocumentData> Documents { get; set; }
+        public DbSet<ProjectData> Projects { get; set; }
         // Aici se va adăuga și celelalte DbSet-uri:
         // public DbSet<UserData> Users { get; set; }
         // public DbSet<EventData> Events { get; set; }
