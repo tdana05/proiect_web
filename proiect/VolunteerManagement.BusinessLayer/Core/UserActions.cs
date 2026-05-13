@@ -218,6 +218,28 @@ namespace VolunteerManagement.BusinessLayer.Core
                 };
             }
         }
+        protected ActionResponse ChangePasswordActionExecution(int userId, ChangePasswordDto passwordData)
+        {
+            using (var db = new VolunteerManagementContext())
+            {
+                var user = db.Users.FirstOrDefault(x => x.Id == userId && !x.IsDeleted);
+                if (user == null)
+                    return new ActionResponse { IsSuccess = false, Message = "User not found." };
+
+                // Verifică parola curentă folosind aceeași metodă HashPassword
+                var currentPasswordHash = HashPassword(passwordData.CurrentPassword);
+                if (user.PasswordHash != currentPasswordHash)
+                    return new ActionResponse { IsSuccess = false, Message = "Current password is incorrect." };
+
+                // Actualizează cu noua parolă
+                user.PasswordHash = HashPassword(passwordData.NewPassword);
+                user.UpdatedAt = DateTime.Now;
+
+                db.SaveChanges();
+            }
+
+            return new ActionResponse { IsSuccess = true, Message = "Password changed successfully." };
+        }
 
         // Helper methods
         private string HashPassword(string password)

@@ -65,5 +65,23 @@ namespace VolunteerManagement.API.Controllers
             
             return Ok(result);
         }
+        [HttpPut("{id}/change-password")]
+        public IActionResult ChangePassword(int id, [FromBody] ChangePasswordDto passwordData)
+        {
+            if (id != passwordData.UserId)
+            {
+                return BadRequest(new { message = "ID mismatch." });
+            }
+    
+            var result = _userAction.ChangePassword(id, passwordData);
+    
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result);
+            }
+    
+            return Ok(result);
+        }
+        
     }
 }
