@@ -13,5 +13,6 @@ namespace VolunteerManagement.BusinessLayer.Interfaces
         ActionResponse UpdateUser(int id, UserDto userData);
         ActionResponse DeleteUser(int id);
         ActionResponse UpdateUserHours(int userId, int totalHours, int tasksCompleted, int eventsAttended);
+        ActionResponse ChangePassword(int userId, ChangePasswordDto passwordData);
     }
 }
