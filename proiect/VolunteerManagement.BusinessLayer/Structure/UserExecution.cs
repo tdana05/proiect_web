@@ -46,5 +46,15 @@ namespace VolunteerManagement.BusinessLayer.Structure
         {
             return UpdateUserHoursActionExecution(userId, totalHours, tasksCompleted, eventsAttended);
         }
+        
+        public ActionResponse CreateUser(CreateUserDto userData)
+        {
+            return CreateUserActionExecution(userData);
+        }
+
+        public List<UserDto> SearchUsers(string searchTerm)
+        {
+            return SearchUsersActionExecution(searchTerm);
+        }
     }
 }
