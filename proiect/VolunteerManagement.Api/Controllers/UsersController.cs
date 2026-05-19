@@ -65,33 +65,23 @@ namespace VolunteerManagement.API.Controllers
             
             return Ok(result);
         }
-        
-        [HttpPost]
-        public IActionResult CreateUser([FromBody] CreateUserDto userData)
+        [HttpPut("{id}/change-password")]
+        public IActionResult ChangePassword(int id, [FromBody] ChangePasswordDto passwordData)
         {
-            if (string.IsNullOrWhiteSpace(userData.Email) || string.IsNullOrWhiteSpace(userData.Password))
+            if (id != passwordData.UserId)
             {
-                return BadRequest(new { message = "Email and password are required." });
+                return BadRequest(new { message = "ID mismatch." });
             }
-
-            var result = _userAction.CreateUser(userData);
+    
+            var result = _userAction.ChangePassword(id, passwordData);
+    
             if (!result.IsSuccess)
             {
                 return BadRequest(result);
             }
+    
             return Ok(result);
         }
         
-        [HttpGet("search")]
-        public IActionResult SearchUsers([FromQuery] string term)
-        {
-            if (string.IsNullOrWhiteSpace(term))
-            {
-                return Ok(_userAction.GetAllUsers());
-            }
-            
-            var users = _userAction.SearchUsers(term);
-            return Ok(users);
-        }
     }
 }
