@@ -65,5 +65,33 @@ namespace VolunteerManagement.API.Controllers
             
             return Ok(result);
         }
+        
+        [HttpPost]
+        public IActionResult CreateUser([FromBody] CreateUserDto userData)
+        {
+            if (string.IsNullOrWhiteSpace(userData.Email) || string.IsNullOrWhiteSpace(userData.Password))
+            {
+                return BadRequest(new { message = "Email and password are required." });
+            }
+
+            var result = _userAction.CreateUser(userData);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+        
+        [HttpGet("search")]
+        public IActionResult SearchUsers([FromQuery] string term)
+        {
+            if (string.IsNullOrWhiteSpace(term))
+            {
+                return Ok(_userAction.GetAllUsers());
+            }
+            
+            var users = _userAction.SearchUsers(term);
+            return Ok(users);
+        }
     }
 }

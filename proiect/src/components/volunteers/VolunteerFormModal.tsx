@@ -20,71 +20,87 @@ export function VolunteerFormModal({ volunteer, onClose, onSave }: VolunteerForm
     status: volunteer?.status || 'pending',
     role: volunteer?.role || 'volunteer',
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (volunteer) {
-      dataService.updateVolunteer(volunteer.id, formData);
-    } else {
-      dataService.createVolunteer(formData);
+    setLoading(true);
+    setError('');
+
+    try {
+      if (volunteer) {
+        await dataService.updateVolunteer(volunteer.id, formData);
+      } else {
+        await dataService.createVolunteer({ ...formData, password: 'temp123' });
+      }
+      onSave();
+    } catch (err) {
+      console.error('Failed to save volunteer:', err);
+      setError('A aparut o eroare. Va rugam incercati din nou.');
+    } finally {
+      setLoading(false);
     }
-    
-    onSave();
   };
 
   return (
-    <Modal
-      title={volunteer ? 'Editeaza Voluntar' : 'Adauga Voluntar'}
-      onClose={onClose}
-    >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          label="Nume complet"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          required
-        />
-        <Input
-          label="Email"
-          type="email"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          required
-        />
-        <Input
-          label="Telefon"
-          value={formData.phone}
-          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-        />
-        <Select
-          label="Status"
-          value={formData.status}
-          onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-          options={[
-            { value: 'pending', label: 'In asteptare' },
-            { value: 'active', label: 'Activ' },
-            { value: 'inactive', label: 'Inactiv' },
-          ]}
-        />
-        <Select
-          label="Rol"
-          value={formData.role}
-          onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'volunteer' })}
-          options={[
-            { value: 'volunteer', label: 'Voluntar' },
-            { value: 'admin', label: 'Administrator' },
-          ]}
-        />
-        <div className="flex justify-end gap-2 pt-4">
-          <Button type="button" variant="outline" onClick={onClose}>
-            Anuleaza
-          </Button>
-          <Button type="submit">
-            {volunteer ? 'Salveaza' : 'Adauga'}
-          </Button>
-        </div>
-      </form>
-    </Modal>
+      <Modal
+          title={volunteer ? 'Editeaza Voluntar' : 'Adauga Voluntar'}
+          onClose={onClose}
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
+                {error}
+              </div>
+          )}
+
+          <Input
+              label="Nume complet"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+          />
+          <Input
+              label="Email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+          />
+          <Input
+              label="Telefon"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+          />
+          <Select
+              label="Status"
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              options={[
+                { value: 'pending', label: 'In asteptare' },
+                { value: 'active', label: 'Activ' },
+                { value: 'inactive', label: 'Inactiv' },
+              ]}
+          />
+          <Select
+              label="Rol"
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'volunteer' })}
+              options={[
+                { value: 'volunteer', label: 'Voluntar' },
+                { value: 'admin', label: 'Administrator' },
+              ]}
+          />
+          <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+              Anuleaza
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Se salveaza...' : (volunteer ? 'Salveaza' : 'Adauga')}
+            </Button>
+          </div>
+        </form>
+      </Modal>
   );
 }

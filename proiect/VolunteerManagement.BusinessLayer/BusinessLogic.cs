@@ -25,5 +25,16 @@ namespace VolunteerManagement.BusinessLayer
         {
             return new EventExecution();
         }
+        
+        public IHoursEntryAction HoursEntryAction() => new HoursEntryExecution();
+        
+        public ITaskAction TaskAction() => new TaskExecution();
     }
 }
+
+
+
+
+
+
+

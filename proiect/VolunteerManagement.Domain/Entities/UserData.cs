@@ -24,11 +24,11 @@ namespace VolunteerManagement.Domain.Entities
 
         [Required]
         [StringLength(20)]
-        public string Role { get; set; } = "volunteer"; // admin, volunteer
+        public string Role { get; set; } = "volunteer"; 
 
         [Required]
         [StringLength(20)]
-        public string Status { get; set; } = "pending"; // pending, active, inactive
+        public string Status { get; set; } = "pending"; 
 
         [StringLength(20)]
         public string? Phone { get; set; }
