@@ -269,5 +269,69 @@ namespace VolunteerManagement.BusinessLayer.Core
                 EventsAttended = user.EventsAttended
             };
         }
+                protected ActionResponse CreateUserActionExecution(CreateUserDto userData)
+        {
+            using (var db = new VolunteerManagementContext())
+            {
+                // Check if email already exists
+                var existingUser = db.Users
+                    .FirstOrDefault(x => x.Email.ToLower() == userData.Email.ToLower() && !x.IsDeleted);
+                
+                if (existingUser != null)
+                {
+                    return new ActionResponse
+                    {
+                        IsSuccess = false,
+                        Message = "A user with this email already exists."
+                    };
+                }
+
+                var user = new UserData
+                {
+                    Email = userData.Email,
+                    PasswordHash = HashPassword(userData.Password),
+                    Name = userData.Name,
+                    Role = userData.Role ?? "volunteer",
+                    Status = userData.Status ?? "active",
+                    Phone = userData.Phone,
+                    Department = userData.Department,
+                    Bio = userData.Bio,
+                    JoinDate = DateTime.Now,
+                    TotalHours = 0,
+                    TasksCompleted = 0,
+                    EventsAttended = 0
+                };
+
+                db.Users.Add(user);
+                db.SaveChanges();
+
+                return new ActionResponse
+                {
+                    IsSuccess = true,
+                    Message = "User created successfully.",
+                    Data = MapToUserDto(user)
+                };
+            }
+        }
+
+        protected List<UserDto> SearchUsersActionExecution(string searchTerm)
+        {
+            var users = new List<UserDto>();
+            using (var db = new VolunteerManagementContext())
+            {
+                var lowerTerm = searchTerm.ToLower();
+                var userData = db.Users
+                    .Where(x => !x.IsDeleted && 
+                        (x.Name.ToLower().Contains(lowerTerm) || 
+                         x.Email.ToLower().Contains(lowerTerm)))
+                    .ToList();
+
+                foreach (var user in userData)
+                {
+                    users.Add(MapToUserDto(user));
+                }
+            }
+            return users;
+        }
     }
 }
