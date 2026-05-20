@@ -26,7 +26,7 @@ namespace VolunteerManagement.BusinessLayer.Core
             return result;
         }
 
-        protected ProjectDto? GetProjectByIdActionExecution(int id)
+        public ProjectDto? GetProjectByIdActionExecution(int id)
         {
             using (var db = new VolunteerManagementContext())
             {
@@ -36,7 +36,7 @@ namespace VolunteerManagement.BusinessLayer.Core
             }
         }
 
-        protected ActionResponse CreateProjectActionExecution(CreateProjectDto dto)
+        public ActionResponse CreateProjectActionExecution(CreateProjectDto dto)
         {
             using (var db = new VolunteerManagementContext())
             {
@@ -59,7 +59,7 @@ namespace VolunteerManagement.BusinessLayer.Core
             return new ActionResponse { IsSuccess = true, Message = "Project created successfully." };
         }
 
-        protected ActionResponse UpdateProjectActionExecution(int id, UpdateProjectDto dto)
+        public ActionResponse UpdateProjectActionExecution(int id, UpdateProjectDto dto)
         {
             using (var db = new VolunteerManagementContext())
             {
@@ -83,7 +83,7 @@ namespace VolunteerManagement.BusinessLayer.Core
             return new ActionResponse { IsSuccess = true, Message = "Project updated successfully." };
         }
 
-        protected ActionResponse DeleteProjectActionExecution(int id)
+        public ActionResponse DeleteProjectActionExecution(int id)
         {
             using (var db = new VolunteerManagementContext())
             {
