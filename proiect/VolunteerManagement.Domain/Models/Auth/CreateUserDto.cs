@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using VolunteerManagement.Domain.Enums;
 
 namespace VolunteerManagement.Domain.Models.Auth
 {
@@ -15,8 +16,7 @@ namespace VolunteerManagement.Domain.Models.Auth
         [Required]
         public string Name { get; set; } = string.Empty;
 
-        public string? Role { get; set; } = "volunteer";
-
+        public UserRole? Role { get; set; } 
         public string? Status { get; set; } = "active";
 
         public string? Phone { get; set; }

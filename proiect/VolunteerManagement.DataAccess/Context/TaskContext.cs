@@ -3,16 +3,10 @@ using VolunteerManagement.Domain.Entities;
 
 namespace VolunteerManagement.DataAccess.Context
 {
-    public class VolunteerManagementContext : DbContext
+    public class TaskContext : DbContext
     {
-        public DbSet<AnnouncementData> Announcements { get; set; }
-        public DbSet<UserData> Users { get; set; }
-        public DbSet<EventData> Events { get; set; }
-        public DbSet<EventAttendeeData> EventAttendees { get; set; }
-        public DbSet<ProjectData> Projects { get; set; }
-        public DbSet<DocumentData> Documents { get; set; }
-        public DbSet<HoursEntryData> HoursEntries { get; set; }
         public DbSet<TaskData> Tasks { get; set; }
+        public DbSet<UserData> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -23,12 +17,6 @@ namespace VolunteerManagement.DataAccess.Context
         {
             base.OnModelCreating(modelBuilder);
 
-            // Composite unique key for EventAttendee
-            modelBuilder.Entity<EventAttendeeData>()
-                .HasIndex(ea => new { ea.EventId, ea.UserId })
-                .IsUnique();
-
-            // Configure Task foreign keys to avoid multiple cascade paths
             modelBuilder.Entity<TaskData>()
                 .HasOne(t => t.Assignee)
                 .WithMany()

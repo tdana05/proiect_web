@@ -12,7 +12,7 @@ namespace VolunteerManagement.BusinessLayer.Core
         protected List<EventDto> GetAllEventsActionExecution(int? month = null, int? year = null)
         {
             var result = new List<EventDto>();
-            using (var db = new VolunteerManagementContext())
+            using (var db = new EventContext())
             {
                 var query = db.Events.Where(x => !x.IsDeleted);
 
@@ -33,7 +33,7 @@ namespace VolunteerManagement.BusinessLayer.Core
 
         protected EventDto? GetEventByIdActionExecution(int id)
         {
-            using (var db = new VolunteerManagementContext())
+            using (var db = new EventContext())
             {
                 var ev = db.Events.FirstOrDefault(x => x.Id == id && !x.IsDeleted);
                 if (ev == null) return null;
@@ -43,7 +43,7 @@ namespace VolunteerManagement.BusinessLayer.Core
 
         protected ActionResponse CreateEventActionExecution(CreateEventDto eventData)
         {
-            using (var db = new VolunteerManagementContext())
+            using (var db = new EventContext())
             {
                 var ev = new EventData
                 {
@@ -61,7 +61,6 @@ namespace VolunteerManagement.BusinessLayer.Core
                 db.Events.Add(ev);
                 db.SaveChanges();
 
-                // Add attendees
                 foreach (var attendeeId in eventData.AttendeeIds)
                 {
                     db.EventAttendees.Add(new EventAttendeeData
@@ -84,7 +83,7 @@ namespace VolunteerManagement.BusinessLayer.Core
 
         protected ActionResponse UpdateEventActionExecution(int id, UpdateEventDto eventData)
         {
-            using (var db = new VolunteerManagementContext())
+            using (var db = new EventContext())
             {
                 var ev = db.Events.FirstOrDefault(x => x.Id == id && !x.IsDeleted);
                 if (ev == null)
@@ -105,7 +104,6 @@ namespace VolunteerManagement.BusinessLayer.Core
                 ev.Color = eventData.Color;
                 ev.UpdatedAt = DateTime.Now;
 
-                // Update attendees - remove old, add new
                 var oldAttendees = db.EventAttendees.Where(a => a.EventId == id).ToList();
                 db.EventAttendees.RemoveRange(oldAttendees);
 
@@ -131,7 +129,7 @@ namespace VolunteerManagement.BusinessLayer.Core
 
         protected ActionResponse DeleteEventActionExecution(int id)
         {
-            using (var db = new VolunteerManagementContext())
+            using (var db = new EventContext())
             {
                 var ev = db.Events.FirstOrDefault(x => x.Id == id);
                 if (ev == null)
@@ -157,7 +155,7 @@ namespace VolunteerManagement.BusinessLayer.Core
 
         protected ActionResponse ToggleAttendActionExecution(int eventId, int userId)
         {
-            using (var db = new VolunteerManagementContext())
+            using (var db = new EventContext())
             {
                 var ev = db.Events.FirstOrDefault(x => x.Id == eventId && !x.IsDeleted);
                 if (ev == null)
@@ -173,7 +171,6 @@ namespace VolunteerManagement.BusinessLayer.Core
                 
                 if (attendance == null)
                 {
-                    // Add attendance
                     db.EventAttendees.Add(new EventAttendeeData
                     {
                         EventId = eventId,
@@ -189,7 +186,6 @@ namespace VolunteerManagement.BusinessLayer.Core
                 }
                 else
                 {
-                    // Remove attendance
                     db.EventAttendees.Remove(attendance);
                     db.SaveChanges();
                     return new ActionResponse
@@ -201,12 +197,10 @@ namespace VolunteerManagement.BusinessLayer.Core
             }
         }
 
-        // Helper methods
-        private EventDto MapToEventDto(EventData ev, VolunteerManagementContext db)
+        private EventDto MapToEventDto(EventData ev, EventContext db)
         {
             var creator = db.Users.FirstOrDefault(u => u.Id == ev.CreatedBy);
     
-            // Ia toți participanții pentru acest eveniment
             var attendeesList = db.EventAttendees
                 .Where(a => a.EventId == ev.Id)
                 .ToList();
@@ -226,7 +220,7 @@ namespace VolunteerManagement.BusinessLayer.Core
                 CreatedBy = ev.CreatedBy.ToString(),
                 CreatedByName = creator?.Name ?? "Unknown",
                 Attendees = attendeeUsers.Select(u => u.Name).ToList(),
-                AttendeeIds = attendeeIds,  // ← asigură-te că această linie există
+                AttendeeIds = attendeeIds,
                 Color = ev.Color
             };
         }

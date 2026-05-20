@@ -1,21 +1,39 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CalendarGrid } from './CalendarGrid'
 import { CalendarHeader } from './CalendarHeader'
 import { EventModal } from './EventModal'
 import { EventFormModal } from './EventFormModal'
 import type { Event } from '../../types'
-import { dataService } from '../../services/dataService'
+import { eventService } from '../../services/eventService' 
+import { useAuth } from '../../context/AuthContext'  
 
 export function CalendarView() {
+    const { user, isAdmin } = useAuth()  // ← folosește auth real
     const [currentDate, setCurrentDate] = useState(new Date())
-    const [events, setEvents] = useState<Event[]>(dataService.getEvents())
+    const [events, setEvents] = useState<Event[]>([])
     const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
     const [isFormOpen, setIsFormOpen] = useState(false)
     const [editingEvent, setEditingEvent] = useState<Event | null>(null)
+    const [loading, setLoading] = useState(true)
 
-    // Verifică dacă utilizatorul este admin (ajustează după structura ta)
-    const user = { role: 'admin' } // Înlocuiește cu auth real
-    const isAdmin = user?.role === 'admin'
+    // Încarcă evenimente la schimbarea lunii
+    useEffect(() => {
+        loadEvents()
+    }, [currentDate])
+
+    const loadEvents = async () => {
+        setLoading(true)
+        try {
+            const month = currentDate.getMonth() + 1
+            const year = currentDate.getFullYear()
+            const data = await eventService.getAll(month, year)
+            setEvents(data)
+        } catch (error) {
+            console.error('Failed to load events:', error)
+        } finally {
+            setLoading(false)
+        }
+    }
 
     const handlePrevMonth = () => {
         setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))
@@ -37,22 +55,64 @@ export function CalendarView() {
     const handleEditEvent = (event: Event) => {
         setEditingEvent(event)
         setIsFormOpen(true)
-        setSelectedEvent(null) // Închide modalul de vizualizare
+        setSelectedEvent(null)
     }
 
-    const handleDeleteEvent = (eventId: string) => {
-        dataService.deleteEvent(eventId)
-        setEvents(dataService.getEvents())
+    const handleDeleteEvent = async (eventId: string) => {
+        if (confirm('Sigur dorești să ștergi acest eveniment?')) {
+            try {
+                await eventService.delete(eventId)
+                await loadEvents()
+                setSelectedEvent(null)
+            } catch (error) {
+                console.error('Failed to delete event:', error)
+                alert('Eroare la ștergerea evenimentului')
+            }
+        }
     }
 
-    const handleSubmitEvent = (eventData: Omit<Event, 'id'>) => {
-        const newEvent = dataService.addEvent(eventData)
-        setEvents([...events, newEvent])
+    const handleSubmitEvent = async (eventData: Omit<Event, 'id'>) => {
+        if (!user) return
+        try {
+            await eventService.create(eventData, parseInt(user.id))
+            await loadEvents()
+            setIsFormOpen(false)
+        } catch (error) {
+            console.error('Failed to create event:', error)
+            alert('Eroare la crearea evenimentului')
+        }
     }
 
-    const handleUpdateEvent = (id: string, eventData: Omit<Event, 'id'>) => {
-        dataService.updateEvent(id, eventData)
-        setEvents(dataService.getEvents())
+    const handleUpdateEvent = async (id: string, eventData: Omit<Event, 'id'>) => {
+        try {
+            const attendeeIds = eventData.attendees.map(a => parseInt(a))
+            await eventService.update(id, eventData, attendeeIds)
+            await loadEvents()
+            setIsFormOpen(false)
+            setEditingEvent(null)
+        } catch (error) {
+            console.error('Failed to update event:', error)
+            alert('Eroare la actualizarea evenimentului')
+        }
+    }
+
+    const handleToggleAttend = async (eventId: string) => {
+        if (!user) return
+        try {
+            await eventService.toggleAttend(eventId, parseInt(user.id))
+            await loadEvents()
+            const updatedEvent = events.find(e => e.id === eventId)
+            if (updatedEvent) {
+                setSelectedEvent(updatedEvent)
+            }
+        } catch (error) {
+            console.error('Failed to toggle attendance:', error)
+            alert('Eroare la modificarea participării')
+        }
+    }
+
+    if (loading) {
+        return <div className="flex justify-center p-8">Se încarcă...</div>
     }
 
     return (
@@ -62,7 +122,7 @@ export function CalendarView() {
                 onPrev={handlePrevMonth}
                 onNext={handleNextMonth}
                 onToday={handleToday}
-                onAdd={handleAddEvent}
+                onAdd={isAdmin ? handleAddEvent : undefined}
                 isAdmin={isAdmin}
             />
 
@@ -72,19 +132,19 @@ export function CalendarView() {
                 onEventClick={setSelectedEvent}
             />
 
-            {/* Modal vizualizare eveniment */}
             {selectedEvent && (
                 <EventModal
                     event={selectedEvent}
                     onClose={() => setSelectedEvent(null)}
-                    onEdit={handleEditEvent}
-                    onDelete={handleDeleteEvent}
+                    onEdit={isAdmin ? handleEditEvent : undefined}
+                    onDelete={isAdmin ? handleDeleteEvent : undefined}
+                    onToggleAttend={!isAdmin ? handleToggleAttend : undefined}
                     isAdmin={isAdmin}
+                    currentUserId={user?.id}
                 />
             )}
 
-            {/* Modal adăugare/editare eveniment */}
-            {isFormOpen && (
+            {isFormOpen && isAdmin && (
                 <EventFormModal
                     onClose={() => {
                         setIsFormOpen(false)

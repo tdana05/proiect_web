@@ -14,7 +14,7 @@ namespace VolunteerManagement.BusinessLayer.Core
             var data = new List<AnnouncementDto>();
             List<AnnouncementData> announcements;
 
-            using (var db = new VolunteerManagementContext())
+            using (var db = new AnnouncementContext())
             {
                 announcements = db.Announcements
                     .Where(x => !x.IsDeleted)

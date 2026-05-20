@@ -1,4 +1,4 @@
-/*
+
 using VolunteerManagement.Domain.Models.Dashboard;
 
 namespace VolunteerManagement.BusinessLayer.Interfaces
@@ -12,4 +12,3 @@ namespace VolunteerManagement.BusinessLayer.Interfaces
         List<RecentAnnouncementDto> GetRecentAnnouncements();
     }
 }
-*/

@@ -7,7 +7,8 @@ namespace VolunteerManagement.BusinessLayer.Core
 {
     public static class JwtHelper
     {
-        private static readonly string SecretKey = "YourSuperSecretKeyHereThatIsAtLeast32CharactersLong!";
+        
+        private static readonly string SecretKey = "YourSuperSecretKeyThatIsAtLeast32CharactersLong!";
         private static readonly string Issuer = "VolunteerManagementAPI";
         private static readonly string Audience = "VolunteerManagementClient";
 
@@ -21,6 +22,8 @@ namespace VolunteerManagement.BusinessLayer.Core
                 new Claim(JwtRegisteredClaimNames.Sub, userId),
                 new Claim(JwtRegisteredClaimNames.Email, email),
                 new Claim(ClaimTypes.Role, role),
+                new Claim("userId", userId),      // Adaugă pentru ușurință
+                new Claim("email", email),        // Adaugă pentru ușurință
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
