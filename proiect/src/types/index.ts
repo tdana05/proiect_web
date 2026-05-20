@@ -1,4 +1,3 @@
-export type UserRole = "admin" | "volunteer"
 export type TaskStatus = "PLANNED" | "IN_PROGRESS" | "BLOCKED" | "REVIEW" | "DONE"
 export type HoursStatus = "pending" | "approved" | "rejected"
 
@@ -6,12 +5,13 @@ export enum UserRole {
   Volunteer = 'volunteer',
   Admin = 'admin'
 }
+
 export interface User {
   id: string
   email: string
   password: string
   name: string
-  role: UserRole
+  role: UserRole  // acum folosește enum-ul
   status: 'pending' | 'active' | 'inactive'
   avatar?: string
   phone?: string
@@ -23,6 +23,7 @@ export interface User {
   eventsAttended: number
 }
 
+// restul interfețelor rămân la fel...
 export interface Event {
   id: string
   title: string

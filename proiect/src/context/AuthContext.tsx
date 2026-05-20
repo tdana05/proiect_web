@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import type { User } from '../types';
+import { UserRole } from '../types'; 
 import { authService } from '../services/authService';
 
 interface AuthContextType {
@@ -45,7 +46,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
-  const isAdmin = user?.role === 'admin';
+  
+  const isAdmin = user?.role === UserRole.Admin;
 
   return (
       <AuthContext.Provider value={{ user, isLoading, login, logout, updateUser, isAdmin }}>

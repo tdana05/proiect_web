@@ -32,7 +32,19 @@ export function VolunteerFormModal({ volunteer, onClose, onSave }: VolunteerForm
       if (volunteer) {
         await dataService.updateVolunteer(volunteer.id, formData);
       } else {
-        await dataService.createVolunteer({ ...formData, password: 'temp123' });
+        // Pasul 1: Creează utilizatorul
+        const newUser = await dataService.createVolunteer({
+          email: formData.email,
+          password: 'temp123',
+          name: formData.name,
+        });
+
+        // Pasul 2: Actualizează telefonul (dacă există)
+        if (formData.phone && newUser.id) {
+          await dataService.updateVolunteer(newUser.id, {
+            phone: formData.phone
+          });
+        }
       }
       onSave();
     } catch (err) {
@@ -73,16 +85,16 @@ export function VolunteerFormModal({ volunteer, onClose, onSave }: VolunteerForm
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
           />
-          <Select
-              label="Status"
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              options={[
-                { value: 'pending', label: 'In asteptare' },
-                { value: 'active', label: 'Activ' },
-                { value: 'inactive', label: 'Inactiv' },
-              ]}
-          />
+            <Select
+                label="Status"
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value as 'pending' | 'active' | 'inactive' })}
+                options={[
+                  { value: 'pending', label: 'In asteptare' },
+                  { value: 'active', label: 'Activ' },
+                  { value: 'inactive', label: 'Inactiv' },
+                ]}
+            />
           <Select
               label="Rol"
               value={formData.role}

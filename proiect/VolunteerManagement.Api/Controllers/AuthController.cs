@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VolunteerManagement.BusinessLayer;
 using VolunteerManagement.BusinessLayer.Interfaces;
@@ -18,11 +19,19 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public IActionResult Login([FromBody] LoginDto loginData)
         {
             if (string.IsNullOrWhiteSpace(loginData.Email) || string.IsNullOrWhiteSpace(loginData.Password))
             {
                 return BadRequest(new { message = "Email and password are required." });
+            }
+
+            var user = _userAction.GetUserByEmail(loginData.Email);
+    
+            if (user != null && user.Status != "active")
+            {
+                return BadRequest(new { message = "Contul dumneavoastră este inactiv. Vă rugăm să contactați administratorul." });
             }
 
             var result = _userAction.Login(loginData);
@@ -36,6 +45,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpPost("register")]
+        [AllowAnonymous]
         public IActionResult Register([FromBody] RegisterDto registerData)
         {
             if (string.IsNullOrWhiteSpace(registerData.Email) || 

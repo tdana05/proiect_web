@@ -2,28 +2,33 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using VolunteerManagement.Domain.Enums;
 
 namespace VolunteerManagement.BusinessLayer.Core
 {
     public static class JwtHelper
     {
-        
         private static readonly string SecretKey = "YourSuperSecretKeyThatIsAtLeast32CharactersLong!";
         private static readonly string Issuer = "VolunteerManagementAPI";
         private static readonly string Audience = "VolunteerManagementClient";
 
-        public static string GenerateToken(string userId, string email, string role)
+        public static string GenerateToken(string userId, string email, UserRole role)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var roleString = role == UserRole.Admin ? "admin" : "volunteer";
+            var roleId = (int)role;
 
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userId),
                 new Claim(JwtRegisteredClaimNames.Email, email),
-                new Claim(ClaimTypes.Role, role),
-                new Claim("userId", userId),      // Adaugă pentru ușurință
-                new Claim("email", email),        // Adaugă pentru ușurință
+                new Claim(ClaimTypes.Role, roleString),
+                new Claim("roleId", roleId.ToString()),
+                new Claim("roleName", roleString),
+                new Claim("userId", userId),
+                new Claim("email", email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 

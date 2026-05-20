@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VolunteerManagement.BusinessLayer;
 using VolunteerManagement.BusinessLayer.Interfaces;
@@ -18,6 +19,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpGet]
+        [Authorize] // Orice utilizator autentificat poate vedea evenimentele
         public IActionResult GetAllEvents([FromQuery] int? month, [FromQuery] int? year)
         {
             var events = _eventAction.GetAllEvents(month, year);
@@ -25,6 +27,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize] // Orice utilizator autentificat poate vedea detaliile unui eveniment
         public IActionResult GetEventById(int id)
         {
             var ev = _eventAction.GetEventById(id);
@@ -36,6 +39,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "AdminOnly")] // Doar admin poate crea evenimente
         public IActionResult CreateEvent([FromBody] CreateEventDto eventData)
         {
             if (string.IsNullOrWhiteSpace(eventData.Title) || string.IsNullOrWhiteSpace(eventData.Date))
@@ -54,6 +58,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "AdminOnly")] 
         public IActionResult UpdateEvent(int id, [FromBody] UpdateEventDto eventData)
         {
             var result = _eventAction.UpdateEvent(id, eventData);
@@ -67,6 +72,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminOnly")] 
         public IActionResult DeleteEvent(int id)
         {
             var result = _eventAction.DeleteEvent(id);
@@ -80,6 +86,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpPost("{id}/attend")]
+        [Authorize(Policy = "VolunteerOnly")] 
         public IActionResult ToggleAttend(int id, [FromBody] int userId)
         {
             var result = _eventAction.ToggleAttend(id, userId);
