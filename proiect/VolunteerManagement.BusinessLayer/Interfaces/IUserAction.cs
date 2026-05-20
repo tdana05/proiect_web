@@ -1,7 +1,8 @@
 using VolunteerManagement.Domain.Models.Auth;
 using VolunteerManagement.Domain.Models.Responses;
-
+using VolunteerManagement.Domain.Enums;
 namespace VolunteerManagement.BusinessLayer.Interfaces
+
 {
     public interface IUserAction
     {

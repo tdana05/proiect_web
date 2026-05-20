@@ -1,7 +1,7 @@
-/*
 using VolunteerManagement.Domain.Entities;
 using VolunteerManagement.Domain.Models.Dashboard;
 using VolunteerManagement.DataAccess.Context;
+using VolunteerManagement.Domain.Enums;
 
 namespace VolunteerManagement.BusinessLayer.Core
 {
@@ -11,21 +11,34 @@ namespace VolunteerManagement.BusinessLayer.Core
 
         protected DashboardStatsDto GetAdminStatsActionExecution()
         {
-            using (var db = new VolunteerManagementContext())
+            using (var userDb = new UserContext())
+            using (var taskDb = new TaskContext())
+            using (var hourDb = new HoursEntryContext())
+            using (var eventDb = new EventContext())
+            using (var announcementDb = new AnnouncementContext())
             {
-                var volunteers = db.Users.Count(x => x.Role == "volunteer" && !x.IsDeleted);
-                var approvedHours = db.HoursEntries?.Where(h => h.Status == "approved").Sum(h => h.Hours) ?? 0;
-                var activeTasks = db.Tasks?.Count(t => t.Status != "DONE") ?? 0;
-                var upcomingEvents = db.Events?.Count(e => e.Date > DateTime.Now) ?? 0;
-                var pendingHours = db.HoursEntries?.Count(h => h.Status == "pending") ?? 0;
+                var volunteers = userDb.Users.Count(x => x.Role == UserRole.Volunteer && !x.IsDeleted);
+                
+                var approvedHours = hourDb.HoursEntries?
+                    .Where(h => h.Status == "approved")
+                    .Sum(h => h.Hours) ?? 0;
+                
+                var activeTasks = taskDb.Tasks?
+                    .Count(t => t.Status != "DONE" && !t.IsDeleted) ?? 0;
+                
+                var upcomingEvents = eventDb.Events?
+                    .Count(e => e.Date > DateTime.Now && !e.IsDeleted) ?? 0;
+                
+                var pendingHours = hourDb.HoursEntries?
+                    .Count(h => h.Status == "pending") ?? 0;
 
                 var tasksByStatus = new
                 {
-                    PLANNED = db.Tasks?.Count(t => t.Status == "PLANNED") ?? 0,
-                    IN_PROGRESS = db.Tasks?.Count(t => t.Status == "IN_PROGRESS") ?? 0,
-                    BLOCKED = db.Tasks?.Count(t => t.Status == "BLOCKED") ?? 0,
-                    REVIEW = db.Tasks?.Count(t => t.Status == "REVIEW") ?? 0,
-                    DONE = db.Tasks?.Count(t => t.Status == "DONE") ?? 0
+                    PLANNED = taskDb.Tasks?.Count(t => t.Status == "PLANNED" && !t.IsDeleted) ?? 0,
+                    IN_PROGRESS = taskDb.Tasks?.Count(t => t.Status == "IN_PROGRESS" && !t.IsDeleted) ?? 0,
+                    BLOCKED = taskDb.Tasks?.Count(t => t.Status == "BLOCKED" && !t.IsDeleted) ?? 0,
+                    REVIEW = taskDb.Tasks?.Count(t => t.Status == "REVIEW" && !t.IsDeleted) ?? 0,
+                    DONE = taskDb.Tasks?.Count(t => t.Status == "DONE" && !t.IsDeleted) ?? 0
                 };
 
                 var hoursByMonth = new List<HoursByMonthDto>();
@@ -34,7 +47,7 @@ namespace VolunteerManagement.BusinessLayer.Core
                 return new DashboardStatsDto
                 {
                     TotalVolunteers = volunteers,
-                    TotalApprovedHours = approvedHours,
+                    TotalApprovedHours = (int)approvedHours,
                     TotalActiveTasks = activeTasks,
                     TotalUpcomingEvents = upcomingEvents,
                     PendingHours = pendingHours,
@@ -47,23 +60,35 @@ namespace VolunteerManagement.BusinessLayer.Core
 
         protected DashboardStatsDto GetVolunteerStatsActionExecution(int userId)
         {
-            using (var db = new VolunteerManagementContext())
+            using (var taskDb = new TaskContext())
+            using (var hourDb = new HoursEntryContext())
+            using (var eventDb = new EventContext())
             {
-                var myHours = db.HoursEntries?.Where(h => h.VolunteerId == userId && h.Status == "approved").Sum(h => h.Hours) ?? 0;
-                var myActiveTasks = db.Tasks?.Count(t => t.AssigneeId == userId && t.Status != "DONE") ?? 0;
-                var myCompletedTasks = db.Tasks?.Count(t => t.AssigneeId == userId && t.Status == "DONE") ?? 0;
+                var myHours = hourDb.HoursEntries?
+                    .Where(h => h.VolunteerId == userId && h.Status == "approved")
+                    .Sum(h => h.Hours) ?? 0;
                 
+                var myActiveTasks = taskDb.Tasks?
+                    .Count(t => t.AssigneeId == userId && t.Status != "DONE" && !t.IsDeleted) ?? 0;
+                
+                var myCompletedTasks = taskDb.Tasks?
+                    .Count(t => t.AssigneeId == userId && t.Status == "DONE" && !t.IsDeleted) ?? 0;
+                
+                var pendingHours = hourDb.HoursEntries?
+                    .Count(h => h.VolunteerId == userId && h.Status == "pending") ?? 0;
+
                 var myUpcomingEvents = 0;
-                if (db.Events != null)
-                {
-                    myUpcomingEvents = db.Events.Count(e => e.Date > DateTime.Now && e.Attendees.Contains(userId.ToString()));
-                }
+                var eventAttendees = eventDb.EventAttendees?
+                    .Where(a => a.UserId == userId)
+                    .Select(a => a.EventId)
+                    .ToList() ?? new List<int>();
                 
-                var pendingHours = db.HoursEntries?.Count(h => h.VolunteerId == userId && h.Status == "pending") ?? 0;
+                myUpcomingEvents = eventDb.Events?
+                    .Count(e => eventAttendees.Contains(e.Id) && e.Date > DateTime.Now && !e.IsDeleted) ?? 0;
 
                 return new DashboardStatsDto
                 {
-                    MyHours = myHours,
+                    MyHours = (int)myHours,
                     MyActiveTasks = myActiveTasks,
                     MyCompletedTasks = myCompletedTasks,
                     MyUpcomingEvents = myUpcomingEvents,
@@ -74,9 +99,10 @@ namespace VolunteerManagement.BusinessLayer.Core
 
         protected List<RecentTaskDto> GetRecentTasksActionExecution(int userId, bool isAdmin)
         {
-            using (var db = new VolunteerManagementContext())
+            using (var db = new TaskContext())
+            using (var userDb = new UserContext())
             {
-                var query = db.Tasks?.Where(t => t.Status != "DONE") ?? new List<TaskData>().AsQueryable();
+                var query = db.Tasks?.Where(t => !t.IsDeleted && t.Status != "DONE") ?? new List<TaskData>().AsQueryable();
                 
                 if (!isAdmin)
                 {
@@ -90,7 +116,7 @@ namespace VolunteerManagement.BusinessLayer.Core
                 var result = new List<RecentTaskDto>();
                 foreach (var task in tasks)
                 {
-                    var assignee = db.Users.FirstOrDefault(u => u.Id == task.AssigneeId);
+                    var assignee = userDb.Users.FirstOrDefault(u => u.Id == task.AssigneeId);
                     result.Add(new RecentTaskDto
                     {
                         Id = task.Id,
@@ -106,9 +132,9 @@ namespace VolunteerManagement.BusinessLayer.Core
 
         protected List<RecentEventDto> GetRecentEventsActionExecution()
         {
-            using (var db = new VolunteerManagementContext())
+            using (var db = new EventContext())
             {
-                var events = db.Events?.Where(e => e.Date > DateTime.Now)
+                var events = db.Events?.Where(e => e.Date > DateTime.Now && !e.IsDeleted)
                                        .OrderBy(e => e.Date)
                                        .Take(3)
                                        .ToList() ?? new List<EventData>();
@@ -131,7 +157,7 @@ namespace VolunteerManagement.BusinessLayer.Core
 
         protected List<RecentAnnouncementDto> GetRecentAnnouncementsActionExecution()
         {
-            using (var db = new VolunteerManagementContext())
+            using (var db = new AnnouncementContext())
             {
                 var announcements = db.Announcements?.Where(a => !a.IsDeleted)
                                                      .OrderByDescending(a => a.Pinned)
@@ -157,4 +183,3 @@ namespace VolunteerManagement.BusinessLayer.Core
         }
     }
 }
-*/

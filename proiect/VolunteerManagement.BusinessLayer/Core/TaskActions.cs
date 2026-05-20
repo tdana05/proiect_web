@@ -12,7 +12,7 @@ namespace VolunteerManagement.BusinessLayer.Core
         protected List<TaskDto> GetAllTasksActionExecution()
         {
             var result = new List<TaskDto>();
-            using (var db = new VolunteerManagementContext())
+            using (var db = new TaskContext())
             {
                 var tasks = db.Tasks
                     .Where(x => !x.IsDeleted)

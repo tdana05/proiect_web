@@ -9,10 +9,10 @@ namespace VolunteerManagement.BusinessLayer.Core
     {
         protected ProjectActions() { }
 
-        public List<ProjectDto> GetAllProjectsActionExecution()
+        protected List<ProjectDto> GetAllProjectsActionExecution()
         {
             var result = new List<ProjectDto>();
-            using (var db = new VolunteerManagementContext())
+            using (var db = new ProjectContext())
             {
                 var projects = db.Projects
                     .Where(p => !p.IsDeleted)

@@ -4,6 +4,7 @@ using VolunteerManagement.Domain.Entities;
 using VolunteerManagement.Domain.Models.Auth;
 using VolunteerManagement.Domain.Models.Responses;
 using VolunteerManagement.DataAccess.Context;
+using VolunteerManagement.Domain.Enums;
 
 namespace VolunteerManagement.BusinessLayer.Core
 {
@@ -14,7 +15,7 @@ namespace VolunteerManagement.BusinessLayer.Core
         protected UserDto? GetUserByEmailActionExecution(string email)
         {
             UserData? user;
-            using (var db = new VolunteerManagementContext())
+            using (var db = new UserContext())
             {
                 user = db.Users
                     .FirstOrDefault(x => x.Email.ToLower() == email.ToLower() && !x.IsDeleted);
@@ -25,51 +26,47 @@ namespace VolunteerManagement.BusinessLayer.Core
             return MapToUserDto(user);
         }
 
-       protected LoginResponseDto? LoginActionExecution(LoginDto loginData)
-       {
-           using (var db = new VolunteerManagementContext())
-           {
-               var user = db.Users
-                   .FirstOrDefault(x => x.Email.ToLower() == loginData.Email.ToLower() && !x.IsDeleted);
-       
-               if (user == null) 
-               {
-                   Console.WriteLine($"User not found: {loginData.Email}");
-                   return null;
-               }
-       
-               // Verify password
-               var passwordHash = HashPassword(loginData.Password);
-               
-               // DEBUG: Afișează hash-urile în consolă
-               Console.WriteLine("=== LOGIN DEBUG ===");
-               Console.WriteLine($"Email: {loginData.Email}");
-               Console.WriteLine($"Password entered: {loginData.Password}");
-               Console.WriteLine($"Generated hash (Base64): {passwordHash}");
-               Console.WriteLine($"Stored hash in DB: {user.PasswordHash}");
-               Console.WriteLine($"Hashes match: {user.PasswordHash == passwordHash}");
-               
-               if (user.PasswordHash != passwordHash) 
-               {
-                   Console.WriteLine("Password mismatch - login failed");
-                   return null;
-               }
-       
-               // Generate JWT token
-               var token = JwtHelper.GenerateToken(user.Id.ToString(), user.Email, user.Role);
-       
-               return new LoginResponseDto
-               {
-                   Token = token,
-                   User = MapToUserDto(user)
-               };
-           }
-       }
+        protected LoginResponseDto? LoginActionExecution(LoginDto loginData)
+        {
+            using (var db = new UserContext())
+            {
+                var user = db.Users
+                    .FirstOrDefault(x => x.Email.ToLower() == loginData.Email.ToLower() && !x.IsDeleted);
+
+                if (user == null)
+                {
+                    Console.WriteLine($"User not found: {loginData.Email}");
+                    return null;
+                }
+
+                var passwordHash = HashPassword(loginData.Password);
+
+                Console.WriteLine("=== LOGIN DEBUG ===");
+                Console.WriteLine($"Email: {loginData.Email}");
+                Console.WriteLine($"Password entered: {loginData.Password}");
+                Console.WriteLine($"Generated hash (Base64): {passwordHash}");
+                Console.WriteLine($"Stored hash in DB: {user.PasswordHash}");
+                Console.WriteLine($"Hashes match: {user.PasswordHash == passwordHash}");
+
+                if (user.PasswordHash != passwordHash)
+                {
+                    Console.WriteLine("Password mismatch - login failed");
+                    return null;
+                }
+
+                var token = JwtHelper.GenerateToken(user.Id.ToString(), user.Email, user.Role.ToString());
+
+                return new LoginResponseDto
+                {
+                    Token = token,
+                    User = MapToUserDto(user)
+                };
+            }
+        }
 
         protected ActionResponse RegisterActionExecution(RegisterDto registerData)
         {
-            // Check if user already exists
-            using (var db = new VolunteerManagementContext())
+            using (var db = new UserContext())
             {
                 var existingUser = db.Users
                     .FirstOrDefault(x => x.Email.ToLower() == registerData.Email.ToLower() && !x.IsDeleted);
@@ -88,7 +85,7 @@ namespace VolunteerManagement.BusinessLayer.Core
                     Email = registerData.Email,
                     PasswordHash = HashPassword(registerData.Password),
                     Name = registerData.Name,
-                    Role = "volunteer",
+                    Role = UserRole.Volunteer,
                     Status = "pending",
                     Phone = registerData.Phone,
                     Department = registerData.Department,
@@ -113,7 +110,7 @@ namespace VolunteerManagement.BusinessLayer.Core
         protected List<UserDto> GetAllUsersActionExecution()
         {
             var users = new List<UserDto>();
-            using (var db = new VolunteerManagementContext())
+            using (var db = new UserContext())
             {
                 var userData = db.Users.Where(x => !x.IsDeleted).ToList();
                 foreach (var user in userData)
@@ -126,7 +123,7 @@ namespace VolunteerManagement.BusinessLayer.Core
 
         protected UserDto? GetUserByIdActionExecution(int id)
         {
-            using (var db = new VolunteerManagementContext())
+            using (var db = new UserContext())
             {
                 var user = db.Users.FirstOrDefault(x => x.Id == id && !x.IsDeleted);
                 return user != null ? MapToUserDto(user) : null;
@@ -135,7 +132,7 @@ namespace VolunteerManagement.BusinessLayer.Core
 
         protected ActionResponse UpdateUserActionExecution(int id, UserDto userData)
         {
-            using (var db = new VolunteerManagementContext())
+            using (var db = new UserContext())
             {
                 var user = db.Users.FirstOrDefault(x => x.Id == id && !x.IsDeleted);
                 if (user == null)
@@ -167,7 +164,7 @@ namespace VolunteerManagement.BusinessLayer.Core
 
         protected ActionResponse DeleteUserActionExecution(int id)
         {
-            using (var db = new VolunteerManagementContext())
+            using (var db = new UserContext())
             {
                 var user = db.Users.FirstOrDefault(x => x.Id == id);
                 if (user == null)
@@ -193,7 +190,7 @@ namespace VolunteerManagement.BusinessLayer.Core
 
         protected ActionResponse UpdateUserHoursActionExecution(int userId, int totalHours, int tasksCompleted, int eventsAttended)
         {
-            using (var db = new VolunteerManagementContext())
+            using (var db = new UserContext())
             {
                 var user = db.Users.FirstOrDefault(x => x.Id == userId && !x.IsDeleted);
                 if (user == null)
@@ -219,7 +216,91 @@ namespace VolunteerManagement.BusinessLayer.Core
             }
         }
 
-        // Helper methods
+        protected ActionResponse ChangePasswordActionExecution(int userId, ChangePasswordDto passwordData)
+        {
+            using (var db = new UserContext())
+            {
+                var user = db.Users.FirstOrDefault(x => x.Id == userId && !x.IsDeleted);
+                if (user == null)
+                    return new ActionResponse { IsSuccess = false, Message = "User not found." };
+
+                var currentPasswordHash = HashPassword(passwordData.CurrentPassword);
+                if (user.PasswordHash != currentPasswordHash)
+                    return new ActionResponse { IsSuccess = false, Message = "Current password is incorrect." };
+
+                user.PasswordHash = HashPassword(passwordData.NewPassword);
+                user.UpdatedAt = DateTime.Now;
+
+                db.SaveChanges();
+            }
+
+            return new ActionResponse { IsSuccess = true, Message = "Password changed successfully." };
+        }
+
+        protected ActionResponse CreateUserActionExecution(CreateUserDto userData)
+        {
+            using (var db = new UserContext())
+            {
+                var existingUser = db.Users
+                    .FirstOrDefault(x => x.Email.ToLower() == userData.Email.ToLower() && !x.IsDeleted);
+
+                if (existingUser != null)
+                {
+                    return new ActionResponse
+                    {
+                        IsSuccess = false,
+                        Message = "A user with this email already exists."
+                    };
+                }
+
+                var user = new UserData
+                {
+                    Email = userData.Email,
+                    PasswordHash = HashPassword(userData.Password),
+                    Name = userData.Name,
+                    Role = userData.Role ?? UserRole.Volunteer,
+                    Status = userData.Status ?? "active",
+                    Phone = userData.Phone,
+                    Department = userData.Department,
+                    Bio = userData.Bio,
+                    JoinDate = DateTime.Now,
+                    TotalHours = 0,
+                    TasksCompleted = 0,
+                    EventsAttended = 0
+                };
+
+                db.Users.Add(user);
+                db.SaveChanges();
+
+                return new ActionResponse
+                {
+                    IsSuccess = true,
+                    Message = "User created successfully.",
+                    Data = MapToUserDto(user)
+                };
+            }
+        }
+
+        protected List<UserDto> SearchUsersActionExecution(string searchTerm)
+        {
+            var users = new List<UserDto>();
+            using (var db = new UserContext())
+            {
+                var lowerTerm = searchTerm.ToLower();
+                var userData = db.Users
+                    .Where(x => !x.IsDeleted &&
+                        (x.Name.ToLower().Contains(lowerTerm) ||
+                         x.Email.ToLower().Contains(lowerTerm)))
+                    .ToList();
+
+                foreach (var user in userData)
+                {
+                    users.Add(MapToUserDto(user));
+                }
+            }
+            return users;
+        }
+
         private string HashPassword(string password)
         {
             using (var sha256 = SHA256.Create())
@@ -246,70 +327,6 @@ namespace VolunteerManagement.BusinessLayer.Core
                 TasksCompleted = user.TasksCompleted,
                 EventsAttended = user.EventsAttended
             };
-        }
-                protected ActionResponse CreateUserActionExecution(CreateUserDto userData)
-        {
-            using (var db = new VolunteerManagementContext())
-            {
-                // Check if email already exists
-                var existingUser = db.Users
-                    .FirstOrDefault(x => x.Email.ToLower() == userData.Email.ToLower() && !x.IsDeleted);
-                
-                if (existingUser != null)
-                {
-                    return new ActionResponse
-                    {
-                        IsSuccess = false,
-                        Message = "A user with this email already exists."
-                    };
-                }
-
-                var user = new UserData
-                {
-                    Email = userData.Email,
-                    PasswordHash = HashPassword(userData.Password),
-                    Name = userData.Name,
-                    Role = userData.Role ?? "volunteer",
-                    Status = userData.Status ?? "active",
-                    Phone = userData.Phone,
-                    Department = userData.Department,
-                    Bio = userData.Bio,
-                    JoinDate = DateTime.Now,
-                    TotalHours = 0,
-                    TasksCompleted = 0,
-                    EventsAttended = 0
-                };
-
-                db.Users.Add(user);
-                db.SaveChanges();
-
-                return new ActionResponse
-                {
-                    IsSuccess = true,
-                    Message = "User created successfully.",
-                    Data = MapToUserDto(user)
-                };
-            }
-        }
-
-        protected List<UserDto> SearchUsersActionExecution(string searchTerm)
-        {
-            var users = new List<UserDto>();
-            using (var db = new VolunteerManagementContext())
-            {
-                var lowerTerm = searchTerm.ToLower();
-                var userData = db.Users
-                    .Where(x => !x.IsDeleted && 
-                        (x.Name.ToLower().Contains(lowerTerm) || 
-                         x.Email.ToLower().Contains(lowerTerm)))
-                    .ToList();
-
-                foreach (var user in userData)
-                {
-                    users.Add(MapToUserDto(user));
-                }
-            }
-            return users;
         }
     }
 }

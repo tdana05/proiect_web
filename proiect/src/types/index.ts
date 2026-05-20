@@ -2,6 +2,10 @@ export type UserRole = "admin" | "volunteer"
 export type TaskStatus = "PLANNED" | "IN_PROGRESS" | "BLOCKED" | "REVIEW" | "DONE"
 export type HoursStatus = "pending" | "approved" | "rejected"
 
+export enum UserRole {
+  Volunteer = 'volunteer',
+  Admin = 'admin'
+}
 export interface User {
   id: string
   email: string

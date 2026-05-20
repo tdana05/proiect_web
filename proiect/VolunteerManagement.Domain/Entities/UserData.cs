@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using VolunteerManagement.Domain.Enums;
 
 namespace VolunteerManagement.Domain.Entities
 {
@@ -23,8 +24,7 @@ namespace VolunteerManagement.Domain.Entities
         public string Name { get; set; } = string.Empty;
 
         [Required]
-        [StringLength(20)]
-        public string Role { get; set; } = "volunteer"; 
+        public UserRole Role { get; set; } = UserRole.Volunteer;
 
         [Required]
         [StringLength(20)]

@@ -1,3 +1,5 @@
+using VolunteerManagement.Domain.Enums;
+
 namespace VolunteerManagement.Domain.Models.Auth
 {
     public class UserDto
@@ -5,7 +7,7 @@ namespace VolunteerManagement.Domain.Models.Auth
         public int Id { get; set; }
         public string Email { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
-        public string Role { get; set; } = string.Empty;
+        public UserRole Role { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? Phone { get; set; }
         public string JoinDate { get; set; } = string.Empty;

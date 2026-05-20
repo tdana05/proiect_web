@@ -16,6 +16,7 @@ namespace VolunteerManagement.Domain.Entities
 
         [Required]
         [Range(0, 24)]
+        [Column(TypeName = "decimal(5,2)")]
         public decimal Hours { get; set; }
 
         [StringLength(500)]

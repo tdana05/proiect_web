@@ -1,4 +1,3 @@
-/*
 using Microsoft.AspNetCore.Mvc;
 using VolunteerManagement.BusinessLayer;
 using VolunteerManagement.BusinessLayer.Interfaces;
@@ -63,4 +62,3 @@ namespace VolunteerManagement.API.Controllers
         }
     }
 }
-*/

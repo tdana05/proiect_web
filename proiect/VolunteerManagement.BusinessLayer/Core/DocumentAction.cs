@@ -12,7 +12,7 @@ namespace VolunteerManagement.BusinessLayer.Core
         protected List<DocumentDto> GetAllDocumentsActionExecution()
         {
             var result = new List<DocumentDto>();
-            using (var db = new VolunteerManagementContext())
+            using (var db = new DocumentContext())
             {
                 var documents = db.Documents
                     .Where(d => !d.IsDeleted)

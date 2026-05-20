@@ -12,7 +12,7 @@ namespace VolunteerManagement.BusinessLayer.Core
         protected List<HoursEntryDto> GetAllHoursEntriesActionExecution()
         {
             var result = new List<HoursEntryDto>();
-            using (var db = new VolunteerManagementContext())
+            using (var db = new HoursEntryContext())
             {
                 var entries = db.HoursEntries
                     .Where(x => !x.IsDeleted)
