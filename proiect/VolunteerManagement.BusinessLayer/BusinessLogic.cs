@@ -1,6 +1,6 @@
 ﻿using VolunteerManagement.BusinessLayer.Interfaces;
 using VolunteerManagement.BusinessLayer.Structure;
-
+using VolunteerManagement.BusinessLayer.Core;
 namespace VolunteerManagement.BusinessLayer
 {
     public class BusinessLogic

@@ -46,9 +46,5 @@ namespace VolunteerManagement.BusinessLayer.Structure
         {
             return UpdateUserHoursActionExecution(userId, totalHours, tasksCompleted, eventsAttended);
         }
-        public ActionResponse ChangePassword(int userId, ChangePasswordDto passwordData)
-        {
-            return ChangePasswordActionExecution(userId, passwordData);
-        }
     }
 }
