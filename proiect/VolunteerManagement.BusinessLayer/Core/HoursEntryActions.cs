@@ -1,7 +1,7 @@
-using VolunteerManagement.DataAccess.Context;
 using VolunteerManagement.Domain.Entities;
-using VolunteerManagement.Domain.Models.Hours;
+using VolunteerManagement.Domain.Models.HoursEntry;
 using VolunteerManagement.Domain.Models.Responses;
+using VolunteerManagement.DataAccess.Context;
 
 namespace VolunteerManagement.BusinessLayer.Core
 {
@@ -11,71 +11,81 @@ namespace VolunteerManagement.BusinessLayer.Core
 
         protected List<HoursEntryDto> GetAllHoursEntriesActionExecution()
         {
-            var result = new List<HoursEntryDto>();
             using (var db = new HoursEntryContext())
+            using (var userDb = new UserContext())
             {
                 var entries = db.HoursEntries
-                    .Where(x => !x.IsDeleted)
+                    .Where(h => !h.IsDeleted)
+                    .OrderByDescending(h => h.CreatedAt)
                     .ToList();
 
+                var result = new List<HoursEntryDto>();
                 foreach (var entry in entries)
                 {
-                    var volunteer = db.Users.FirstOrDefault(u => u.Id == entry.VolunteerId && !u.IsDeleted);
-                    result.Add(MapToDto(entry, volunteer));
+                    var volunteer = userDb.Users.FirstOrDefault(u => u.Id == entry.VolunteerId);
+                    result.Add(MapToDto(entry, volunteer?.Name ?? "Unknown"));
                 }
+                return result;
             }
-            return result;
         }
 
-        protected List<HoursEntryDto> GetHoursEntriesByVolunteerActionExecution(int volunteerId)
+        protected List<HoursEntryDto> GetHoursByVolunteerActionExecution(int volunteerId)
         {
-            var result = new List<HoursEntryDto>();
-            using (var db = new VolunteerManagementContext())
+            using (var db = new HoursEntryContext())
+            using (var userDb = new UserContext())
             {
                 var entries = db.HoursEntries
-                    .Where(x => x.VolunteerId == volunteerId && !x.IsDeleted)
+                    .Where(h => h.VolunteerId == volunteerId && !h.IsDeleted)
+                    .OrderByDescending(h => h.CreatedAt)
                     .ToList();
 
-                var volunteer = db.Users.FirstOrDefault(u => u.Id == volunteerId && !u.IsDeleted);
-
+                var volunteer = userDb.Users.FirstOrDefault(u => u.Id == volunteerId);
+                var result = new List<HoursEntryDto>();
                 foreach (var entry in entries)
                 {
-                    result.Add(MapToDto(entry, volunteer));
+                    result.Add(MapToDto(entry, volunteer?.Name ?? "Unknown"));
                 }
+                return result;
             }
-            return result;
         }
 
         protected HoursEntryDto? GetHoursEntryByIdActionExecution(int id)
         {
-            using (var db = new VolunteerManagementContext())
+            using (var db = new HoursEntryContext())
+            using (var userDb = new UserContext())
             {
-                var entry = db.HoursEntries.FirstOrDefault(x => x.Id == id && !x.IsDeleted);
+                var entry = db.HoursEntries.FirstOrDefault(h => h.Id == id && !h.IsDeleted);
                 if (entry == null) return null;
-
-                var volunteer = db.Users.FirstOrDefault(u => u.Id == entry.VolunteerId && !u.IsDeleted);
-                return MapToDto(entry, volunteer);
+                
+                var volunteer = userDb.Users.FirstOrDefault(u => u.Id == entry.VolunteerId);
+                return MapToDto(entry, volunteer?.Name ?? "Unknown");
             }
         }
 
-        protected ActionResponse CreateHoursEntryActionExecution(CreateHoursEntryDto data)
+        protected ActionResponse CreateHoursEntryActionExecution(CreateHoursEntryDto dto)
         {
-            using (var db = new VolunteerManagementContext())
+            using (var db = new HoursEntryContext())
+            using (var userDb = new UserContext())
             {
-                var volunteer = db.Users.FirstOrDefault(x => x.Id == data.VolunteerId && !x.IsDeleted);
+                // Verifică dacă voluntarul există
+                var volunteer = userDb.Users.FirstOrDefault(u => u.Id == dto.VolunteerId && !u.IsDeleted);
                 if (volunteer == null)
                 {
-                    return new ActionResponse { IsSuccess = false, Message = "Volunteer not found." };
+                    return new ActionResponse
+                    {
+                        IsSuccess = false,
+                        Message = "Volunteer not found."
+                    };
                 }
 
                 var entry = new HoursEntryData
                 {
-                    VolunteerId = data.VolunteerId,
-                    Date = data.Date,
-                    Hours = data.Hours,
-                    Description = data.Description,
-                    RelatedTaskId = data.RelatedTaskId,
-                    RelatedEventId = data.RelatedEventId,
+                    VolunteerId = dto.VolunteerId,
+                    Date = dto.Date,
+                    Hours = dto.Hours,
+                    Description = dto.Description,
+                    RelatedTaskId = dto.RelatedTaskId,
+                    RelatedEventId = dto.RelatedEventId,
                     Status = "pending",
                     CreatedAt = DateTime.Now
                 };
@@ -83,73 +93,99 @@ namespace VolunteerManagement.BusinessLayer.Core
                 db.HoursEntries.Add(entry);
                 db.SaveChanges();
 
-                return new ActionResponse { IsSuccess = true, Message = "Hours entry created successfully." };
+                return new ActionResponse
+                {
+                    IsSuccess = true,
+                    Message = "Hours entry created successfully. Waiting for admin approval.",
+                    Data = new { Id = entry.Id }
+                };
             }
         }
 
-        protected ActionResponse UpdateHoursEntryStatusActionExecution(int id, UpdateHoursEntryDto data)
+        protected ActionResponse UpdateHoursStatusActionExecution(int id, UpdateHoursStatusDto dto)
         {
-            using (var db = new VolunteerManagementContext())
+            using (var db = new HoursEntryContext())
+            using (var userDb = new UserContext())
             {
-                var entry = db.HoursEntries.FirstOrDefault(x => x.Id == id && !x.IsDeleted);
+                var entry = db.HoursEntries.FirstOrDefault(h => h.Id == id && !h.IsDeleted);
                 if (entry == null)
                 {
-                    return new ActionResponse { IsSuccess = false, Message = "Hours entry not found." };
+                    return new ActionResponse
+                    {
+                        IsSuccess = false,
+                        Message = "Hours entry not found."
+                    };
                 }
 
-                entry.Status = data.Status;
-                entry.AdminNote = data.AdminNote;
+                entry.Status = dto.Status;
+                entry.AdminNote = dto.AdminNote;
                 entry.UpdatedAt = DateTime.Now;
+                db.SaveChanges();
 
-                // If approved, update volunteer's total hours
-                if (data.Status == "approved")
+                // Dacă orele sunt aprobate, actualizează TotalHours în UserData
+                if (dto.Status == "approved")
                 {
-                    var volunteer = db.Users.FirstOrDefault(x => x.Id == entry.VolunteerId);
+                    var volunteer = userDb.Users.FirstOrDefault(u => u.Id == entry.VolunteerId);
                     if (volunteer != null)
                     {
-                        volunteer.TotalHours += (int)entry.Hours;
-                        volunteer.UpdatedAt = DateTime.Now;
+                        var totalHours = db.HoursEntries
+                            .Where(h => h.VolunteerId == entry.VolunteerId && h.Status == "approved" && !h.IsDeleted)
+                            .Sum(h => h.Hours);
+                        
+                        volunteer.TotalHours = (int)totalHours;
+                        userDb.SaveChanges();
                     }
                 }
 
-                db.SaveChanges();
-
-                return new ActionResponse { IsSuccess = true, Message = $"Hours entry {data.Status} successfully." };
+                return new ActionResponse
+                {
+                    IsSuccess = true,
+                    Message = dto.Status == "approved" ? "Hours approved successfully." : "Hours rejected successfully."
+                };
             }
         }
 
         protected ActionResponse DeleteHoursEntryActionExecution(int id)
         {
-            using (var db = new VolunteerManagementContext())
+            using (var db = new HoursEntryContext())
             {
-                var entry = db.HoursEntries.FirstOrDefault(x => x.Id == id);
+                var entry = db.HoursEntries.FirstOrDefault(h => h.Id == id);
                 if (entry == null)
                 {
-                    return new ActionResponse { IsSuccess = false, Message = "Hours entry not found." };
+                    return new ActionResponse
+                    {
+                        IsSuccess = false,
+                        Message = "Hours entry not found."
+                    };
                 }
 
                 entry.IsDeleted = true;
                 entry.UpdatedAt = DateTime.Now;
                 db.SaveChanges();
 
-                return new ActionResponse { IsSuccess = true, Message = "Hours entry deleted successfully." };
+                return new ActionResponse
+                {
+                    IsSuccess = true,
+                    Message = "Hours entry deleted successfully."
+                };
             }
         }
 
-        private HoursEntryDto MapToDto(HoursEntryData entry, UserData? volunteer)
+        private HoursEntryDto MapToDto(HoursEntryData entry, string volunteerName)
         {
             return new HoursEntryDto
             {
                 Id = entry.Id,
                 VolunteerId = entry.VolunteerId,
-                VolunteerName = volunteer?.Name ?? "Unknown",
-                Date = entry.Date.ToString("o"),
+                VolunteerName = volunteerName,
+                Date = entry.Date,
                 Hours = entry.Hours,
                 Description = entry.Description,
                 RelatedTaskId = entry.RelatedTaskId,
                 RelatedEventId = entry.RelatedEventId,
                 Status = entry.Status,
-                AdminNote = entry.AdminNote
+                AdminNote = entry.AdminNote,
+                CreatedAt = entry.CreatedAt
             };
         }
     }

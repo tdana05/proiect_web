@@ -12,7 +12,7 @@ namespace VolunteerManagement.BusinessLayer.Core
     {
         protected UserActions() { }
 
-        protected UserDto? GetUserByEmailActionExecution(string email)
+        public UserDto? GetUserByEmailActionExecution(string email)
         {
             UserData? user;
             using (var db = new UserContext())
@@ -38,6 +38,12 @@ namespace VolunteerManagement.BusinessLayer.Core
                     Console.WriteLine($"User not found: {loginData.Email}");
                     return null;
                 }
+                
+                if (user.Status != "active")
+                {
+                    Console.WriteLine($"User {user.Email} is not active (status: {user.Status})");      
+                    return null;
+                }
 
                 var passwordHash = HashPassword(loginData.Password);
 
@@ -54,8 +60,8 @@ namespace VolunteerManagement.BusinessLayer.Core
                     return null;
                 }
 
-                var token = JwtHelper.GenerateToken(user.Id.ToString(), user.Email, user.Role.ToString());
-
+                var token = JwtHelper.GenerateToken(user.Id.ToString(), user.Email, user.Role);
+                
                 return new LoginResponseDto
                 {
                     Token = token,
@@ -64,7 +70,7 @@ namespace VolunteerManagement.BusinessLayer.Core
             }
         }
 
-        protected ActionResponse RegisterActionExecution(RegisterDto registerData)
+        public ActionResponse RegisterActionExecution(RegisterDto registerData)
         {
             using (var db = new UserContext())
             {
@@ -160,6 +166,16 @@ namespace VolunteerManagement.BusinessLayer.Core
                     Message = "User updated successfully."
                 };
             }
+        }
+        
+        public ActionResponse CreateUser(CreateUserDto userData)
+        {
+            return CreateUserActionExecution(userData);
+        }
+        
+        public LoginResponseDto? Login(LoginDto loginData)
+        {
+            return LoginActionExecution(loginData);
         }
 
         protected ActionResponse DeleteUserActionExecution(int id)
@@ -300,7 +316,11 @@ namespace VolunteerManagement.BusinessLayer.Core
             }
             return users;
         }
-
+        public ActionResponse ChangePassword(int userId, ChangePasswordDto passwordData)
+        {
+            return ChangePasswordActionExecution(userId, passwordData);
+        }
+        
         private string HashPassword(string password)
         {
             using (var sha256 = SHA256.Create())

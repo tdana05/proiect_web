@@ -63,7 +63,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.Zero,
+            RoleClaimType = "role"  // ← IMPORTANT: specifică numele claim-ului pentru rol
         };
     });
 
@@ -79,6 +80,15 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowCredentials();
     });
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => 
+        policy.RequireClaim("roleId", "2"));  // 2 = Admin
+    
+    options.AddPolicy("VolunteerOnly", policy => 
+        policy.RequireClaim("roleId", "1"));  // 1 = Volunteer
 });
 
 var app = builder.Build();

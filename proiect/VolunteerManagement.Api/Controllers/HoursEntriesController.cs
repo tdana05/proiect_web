@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VolunteerManagement.BusinessLayer;
 using VolunteerManagement.BusinessLayer.Interfaces;
-using VolunteerManagement.Domain.Models.Hours;
+using VolunteerManagement.Domain.Models.HoursEntry;
 
 namespace VolunteerManagement.API.Controllers
 {
@@ -10,75 +10,94 @@ namespace VolunteerManagement.API.Controllers
     [ApiController]
     public class HoursEntriesController : ControllerBase
     {
-        private IHoursEntryAction _hoursAction;
+        private IHoursEntryAction _hoursEntryAction;
 
         public HoursEntriesController()
         {
             var bl = new BusinessLogic();
-            _hoursAction = bl.HoursEntryAction();
+            _hoursEntryAction = bl.HoursEntryAction();
         }
 
-     
         [HttpGet]
-        [Authorize(Roles = "admin")]
+        [Authorize(Policy = "AdminOnly")]  // ← schimbă aici
         public IActionResult GetAllHoursEntries()
         {
-            var entries = _hoursAction.GetAllHoursEntries();
+            var entries = _hoursEntryAction.GetAllHoursEntries();
             return Ok(entries);
         }
 
-        
-        [HttpGet("volunteer/{volunteerId}")]
-        public IActionResult GetHoursEntriesByVolunteer(int volunteerId)
+        [HttpGet("my-hours")]
+        [Authorize(Policy = "VolunteerOnly")]  // ← adaugă această politică
+        public IActionResult GetMyHours()
         {
-            var entries = _hoursAction.GetHoursEntriesByVolunteer(volunteerId);
+            var userIdClaim = User.FindFirst("userId")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                return Unauthorized(new { message = "User ID not found in token." });
+            }
+            
+            var userId = int.Parse(userIdClaim);
+            var entries = _hoursEntryAction.GetHoursByVolunteer(userId);
             return Ok(entries);
         }
 
-   
         [HttpGet("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize]  // orice utilizator autentificat
         public IActionResult GetHoursEntryById(int id)
         {
-            var entry = _hoursAction.GetHoursEntryById(id);
+            var entry = _hoursEntryAction.GetHoursEntryById(id);
             if (entry == null)
+            {
                 return NotFound(new { message = "Hours entry not found." });
+            }
             return Ok(entry);
         }
 
-        
         [HttpPost]
-        public IActionResult CreateHoursEntry([FromBody] CreateHoursEntryDto data)
+        [Authorize(Policy = "VolunteerOnly")]  // doar voluntari
+        public IActionResult CreateHoursEntry([FromBody] CreateHoursEntryDto dto)
         {
-            var result = _hoursAction.CreateHoursEntry(data);
-            if (!result.IsSuccess)
-                return BadRequest(result);
-            return Ok(result);
+            if (dto.Hours <= 0 || dto.Hours > 24)
+            {
+                return BadRequest(new { message = "Hours must be between 1 and 24." });
+            }
+
+            var result = _hoursEntryAction.CreateHoursEntry(dto);
+            
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            
+            return BadRequest(result);
         }
 
-  
         [HttpPut("{id}/status")]
-        [Authorize(Roles = "admin")]
-        public IActionResult UpdateHoursEntryStatus(int id, [FromBody] UpdateHoursEntryDto data)
+        [Authorize(Policy = "AdminOnly")]  // doar admin
+        public IActionResult UpdateHoursStatus(int id, [FromBody] UpdateHoursStatusDto dto)
         {
-            if (id != data.Id)
-                return BadRequest(new { message = "ID mismatch." });
-
-            var result = _hoursAction.UpdateHoursEntryStatus(id, data);
-            if (!result.IsSuccess)
-                return NotFound(result);
-            return Ok(result);
+            var result = _hoursEntryAction.UpdateHoursStatus(id, dto);
+            
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            
+            return BadRequest(result);
         }
-
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Policy = "AdminOnly")]  // doar admin
         public IActionResult DeleteHoursEntry(int id)
         {
-            var result = _hoursAction.DeleteHoursEntry(id);
-            if (!result.IsSuccess)
-                return NotFound(result);
-            return Ok(result);
+            var result = _hoursEntryAction.DeleteHoursEntry(id);
+            
+            if (result.IsSuccess)
+            {
+                return Ok(result);
+            }
+            
+            return NotFound(result);
         }
     }
 }

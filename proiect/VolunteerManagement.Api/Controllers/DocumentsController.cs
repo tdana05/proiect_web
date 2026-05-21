@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VolunteerManagement.BusinessLayer;
 using VolunteerManagement.BusinessLayer.Interfaces;
@@ -18,6 +19,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public IActionResult GetAll()
         {
             var documents = _documentAction.GetAllDocuments();
@@ -25,6 +27,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public IActionResult GetById(int id)
         {
             var doc = _documentAction.GetDocumentById(id);
@@ -34,6 +37,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult Create([FromBody] CreateDocumentDto dto)
         {
             var result = _documentAction.CreateDocument(dto);
@@ -43,6 +47,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult Update(int id, [FromBody] UpdateDocumentDto dto)
         {
             if (id != dto.Id)
@@ -54,6 +59,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult Delete(int id)
         {
             var result = _documentAction.DeleteDocument(id);

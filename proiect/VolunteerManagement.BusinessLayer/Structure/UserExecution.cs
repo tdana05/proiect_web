@@ -12,7 +12,7 @@ namespace VolunteerManagement.BusinessLayer.Structure
             return GetUserByEmailActionExecution(email);
         }
 
-        public LoginResponseDto? Login(LoginDto loginData)
+        public new LoginResponseDto? Login(LoginDto loginData)
         {
             return LoginActionExecution(loginData);
         }
@@ -46,7 +46,7 @@ namespace VolunteerManagement.BusinessLayer.Structure
         {
             return UpdateUserHoursActionExecution(userId, totalHours, tasksCompleted, eventsAttended);
         }
-        public ActionResponse ChangePassword(int userId, ChangePasswordDto passwordData)
+        public new ActionResponse ChangePassword(int userId, ChangePasswordDto passwordData)
         {
             return ChangePasswordActionExecution(userId, passwordData);
         }

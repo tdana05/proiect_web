@@ -22,7 +22,7 @@ const mapUserFromApi = (user: any): User => ({
   email: user.email,
   password: '',
   name: user.name,
-  role: user.role as 'admin' | 'volunteer',
+  role: user.role === 2 ? 'admin' : 'volunteer',
   status: user.status as 'pending' | 'active' | 'inactive',
   phone: user.phone,
   joinDate: user.joinDate,
@@ -60,6 +60,13 @@ const mapTaskFromApi = (task: any): Task => ({
   category: task.category,
 });
 
+// Helper function to convert role from string to number
+const convertRoleToNumber = (role?: string): number | undefined => {
+  if (role === 'admin') return 2;
+  if (role === 'volunteer') return 1;
+  return undefined;
+};
+
 export const dataService = {
   // ==================== Users / Volunteers (cu axios) ====================
   getUsers: async (): Promise<User[]> => {
@@ -70,7 +77,7 @@ export const dataService = {
   getVolunteers: async (): Promise<User[]> => {
     const response = await apiClient.get('/users');
     const users = response.data.map(mapUserFromApi);
-    return users.filter(u => u.role === 'volunteer');
+    return users.filter((u: User) => u.role === 'volunteer');
   },
 
   getUserById: async (id: string): Promise<User | undefined> => {
@@ -83,11 +90,10 @@ export const dataService = {
   },
 
   updateUser: async (id: string, data: Partial<User>): Promise<User | null> => {
-    await apiClient.put(`/users/${id}`, {
+    const payload: any = {
       id: parseInt(id),
       email: data.email,
       name: data.name,
-      role: data.role,
       status: data.status,
       phone: data.phone,
       department: data.department,
@@ -95,7 +101,15 @@ export const dataService = {
       totalHours: data.totalHours,
       tasksCompleted: data.tasksCompleted,
       eventsAttended: data.eventsAttended,
-    });
+    };
+
+    // Convert role from string to number if present
+    const roleNumber = convertRoleToNumber(data.role);
+    if (roleNumber !== undefined) {
+      payload.role = roleNumber;
+    }
+
+    await apiClient.put(`/users/${id}`, payload);
     const response = await apiClient.get(`/users/${id}`);
     return mapUserFromApi(response.data);
   },
@@ -105,21 +119,15 @@ export const dataService = {
       email: data.email,
       password: data.password || 'default123',
       name: data.name,
-      role: data.role || 'volunteer',
-      status: data.status || 'active',
-      phone: data.phone,
-      department: data.department,
-      bio: data.bio,
     });
     return mapUserFromApi(response.data.data);
   },
 
   updateVolunteer: async (id: string, data: Partial<User>): Promise<User | null> => {
-    await apiClient.put(`/users/${id}`, {
+    const payload: any = {
       id: parseInt(id),
       email: data.email,
       name: data.name,
-      role: data.role,
       status: data.status,
       phone: data.phone,
       department: data.department,
@@ -127,7 +135,15 @@ export const dataService = {
       totalHours: data.totalHours,
       tasksCompleted: data.tasksCompleted,
       eventsAttended: data.eventsAttended,
-    });
+    };
+
+    // Convert role from string to number if present
+    const roleNumber = convertRoleToNumber(data.role);
+    if (roleNumber !== undefined) {
+      payload.role = roleNumber;
+    }
+
+    await apiClient.put(`/users/${id}`, payload);
     const response = await apiClient.get(`/users/${id}`);
     return mapUserFromApi(response.data);
   },
