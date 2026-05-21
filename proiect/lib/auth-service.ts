@@ -42,3 +42,4 @@ export function isAdmin(): boolean {
 export function updateSession(user: User): void {
   localStorage.setItem(SESSION_KEY, JSON.stringify(user));
 }
+

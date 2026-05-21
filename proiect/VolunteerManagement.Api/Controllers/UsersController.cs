@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using VolunteerManagement.BusinessLayer;
 using VolunteerManagement.BusinessLayer.Interfaces;
 using VolunteerManagement.Domain.Models.Auth;
-
 namespace VolunteerManagement.API.Controllers
 {
     [Route("api/users")]
@@ -15,7 +14,7 @@ namespace VolunteerManagement.API.Controllers
         {
             var bl = new BusinessLogic();
             _userAction = bl.UserAction();
-        }
+        } 
 
         [HttpGet]
         public IActionResult GetAllUsers()
@@ -65,23 +64,7 @@ namespace VolunteerManagement.API.Controllers
             
             return Ok(result);
         }
-        [HttpPut("{id}/change-password")]
-        public IActionResult ChangePassword(int id, [FromBody] ChangePasswordDto passwordData)
-        {
-            if (id != passwordData.UserId)
-            {
-                return BadRequest(new { message = "ID mismatch." });
-            }
-    
-            var result = _userAction.ChangePassword(id, passwordData);
-    
-            if (!result.IsSuccess)
-            {
-                return BadRequest(result);
-            }
-    
-            return Ok(result);
-        }
+        
         
     }
 }
