@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VolunteerManagement.BusinessLayer;
 using VolunteerManagement.BusinessLayer.Interfaces;
@@ -19,6 +20,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public IActionResult GetAllAnnouncements()
         {
             var announcements = _announcementAction.GetAllAnnouncementsAction();
@@ -26,6 +28,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public IActionResult GetAnnouncementById(int id)
         {
             var announcement = _announcementAction.GetAnnouncementByIdAction(id);
@@ -37,6 +40,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult CreateAnnouncement([FromBody] AnnouncementDto announcement)
         {
             if (string.IsNullOrWhiteSpace(announcement.Title) || string.IsNullOrWhiteSpace(announcement.Content))
@@ -55,6 +59,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult UpdateAnnouncement(int id, [FromBody] AnnouncementDto announcement)
         {
             if (id != announcement.Id)
@@ -73,6 +78,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult DeleteAnnouncement(int id)
         {
             var result = _announcementAction.DeleteAnnouncementAction(id);

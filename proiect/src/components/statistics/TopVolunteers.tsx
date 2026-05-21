@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
-import { dataService } from '../../services/dataService';
+import { statisticsService } from '../../services/statisticsService';
 import { Trophy } from 'lucide-react';
 
 interface VolunteerRank {
@@ -11,30 +11,27 @@ interface VolunteerRank {
 
 export function TopVolunteers() {
   const [topVolunteers, setTopVolunteers] = useState<VolunteerRank[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const volunteers = dataService.getVolunteers();
-    const hours = dataService.getVolunteerHours();
-
-    const volunteerHours: Record<string, number> = {};
-    hours.forEach(h => {
-      if (h.status === 'approved') {
-        volunteerHours[h.volunteerId] = (volunteerHours[h.volunteerId] || 0) + h.hours;
-      }
-    });
-
-    const ranked = volunteers
-      .map(v => ({
-        name: v.name,
-        hours: volunteerHours[v.id] || 0,
-        rank: 0,
-      }))
-      .sort((a, b) => b.hours - a.hours)
-      .slice(0, 5)
-      .map((v, i) => ({ ...v, rank: i + 1 }));
-
-    setTopVolunteers(ranked);
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const data = await statisticsService.getTopVolunteers(5);
+      setTopVolunteers(data.map(v => ({
+        name: v.name,
+        hours: v.hours,
+        rank: v.rank
+      })));
+    } catch (error) {
+      console.error('Failed to load top volunteers:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getMedalColor = (rank: number) => {
     switch (rank) {
@@ -45,40 +42,58 @@ export function TopVolunteers() {
     }
   };
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Trophy className="h-5 w-5 text-yellow-500" />
-          Top Voluntari
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {topVolunteers.map((v) => (
-            <div key={v.rank} className="flex items-center gap-4">
-              <span className={`text-2xl font-bold ${getMedalColor(v.rank)}`}>
-                #{v.rank}
-              </span>
-              <div className="flex-1">
-                <p className="font-medium text-foreground">{v.name}</p>
-                <p className="text-sm text-muted-foreground">{v.hours} ore</p>
-              </div>
-              <div className="h-2 w-24 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary"
-                  style={{ width: `${(v.hours / (topVolunteers[0]?.hours || 1)) * 100}%` }}
-                />
-              </div>
+  if (loading) {
+    return (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-yellow-500" />
+              Top Voluntari
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-48 flex items-center justify-center">
+              <div className="animate-pulse text-muted-foreground">Se încarcă...</div>
             </div>
-          ))}
-        </div>
-        {topVolunteers.length === 0 && (
-          <p className="text-center text-muted-foreground py-8">
-            Nu exista date disponibile.
-          </p>
-        )}
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+    );
+  }
+
+  return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-yellow-500" />
+            Top Voluntari
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {topVolunteers.map((v) => (
+                <div key={v.rank} className="flex items-center gap-4">
+                            <span className={`text-2xl font-bold ${getMedalColor(v.rank)}`}>
+                                #{v.rank}
+                            </span>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">{v.name}</p>
+                    <p className="text-sm text-muted-foreground">{v.hours} ore</p>
+                  </div>
+                  <div className="h-2 w-24 bg-muted rounded-full overflow-hidden">
+                    <div
+                        className="h-full bg-primary"
+                        style={{ width: `${(v.hours / (topVolunteers[0]?.hours || 1)) * 100}%` }}
+                    />
+                  </div>
+                </div>
+            ))}
+          </div>
+          {topVolunteers.length === 0 && (
+              <p className="text-center text-muted-foreground py-8">
+                Nu exista date disponibile.
+              </p>
+          )}
+        </CardContent>
+      </Card>
   );
 }

@@ -18,26 +18,24 @@ namespace VolunteerManagement.API.Controllers
             _taskAction = bl.TaskAction();
         }
 
-      
         [HttpGet]
-        [Authorize(Roles = "admin")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult GetAllTasks()
         {
             var tasks = _taskAction.GetAllTasks();
             return Ok(tasks);
         }
 
-       
         [HttpGet("assignee/{assigneeId}")]
+        [Authorize]
         public IActionResult GetTasksByAssignee(int assigneeId)
         {
             var tasks = _taskAction.GetTasksByAssignee(assigneeId);
             return Ok(tasks);
         }
 
-
         [HttpGet("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult GetTaskById(int id)
         {
             var task = _taskAction.GetTaskById(id);
@@ -46,9 +44,8 @@ namespace VolunteerManagement.API.Controllers
             return Ok(task);
         }
 
-       
         [HttpPost]
-        [Authorize(Roles = "admin")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult CreateTask([FromBody] CreateTaskDto data)
         {
             var result = _taskAction.CreateTask(data);
@@ -57,9 +54,8 @@ namespace VolunteerManagement.API.Controllers
             return Ok(result);
         }
 
-      
         [HttpPut("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult UpdateTask(int id, [FromBody] UpdateTaskDto data)
         {
             if (id != data.Id)
@@ -71,9 +67,8 @@ namespace VolunteerManagement.API.Controllers
             return Ok(result);
         }
 
-
         [HttpDelete("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult DeleteTask(int id)
         {
             var result = _taskAction.DeleteTask(id);

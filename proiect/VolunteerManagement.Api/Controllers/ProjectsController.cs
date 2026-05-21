@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VolunteerManagement.BusinessLayer;
 using VolunteerManagement.BusinessLayer.Interfaces;
@@ -18,6 +19,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public IActionResult GetAll()
         {
             var projects = _projectAction.GetAllProjects();
@@ -25,6 +27,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public IActionResult GetById(int id)
         {
             var project = _projectAction.GetProjectById(id);
@@ -34,6 +37,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult Create([FromBody] CreateProjectDto dto)
         {
             var result = _projectAction.CreateProject(dto);
@@ -43,6 +47,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult Update(int id, [FromBody] UpdateProjectDto dto)
         {
             if (id != dto.Id)
@@ -55,6 +60,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult Delete(int id)
         {
             var result = _projectAction.DeleteProject(id);

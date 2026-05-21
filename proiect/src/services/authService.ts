@@ -1,5 +1,6 @@
 import apiClient from './apiClient';
 import type { User } from '../types';
+import { UserRole } from '../types'; 
 
 const SESSION_KEY = 'amicus_session';
 const TOKEN_KEY = 'amicus_token';
@@ -10,7 +11,7 @@ interface LoginResponse {
     id: number;
     email: string;
     name: string;
-    role: string;
+    role: number; 
     status: string;
     phone?: string;
     joinDate: string;
@@ -32,7 +33,7 @@ const mapToUser = (data: any): User => ({
   email: data.email,
   password: '',
   name: data.name,
-  role: data.role === 2 ? 'admin' : 'volunteer',
+  role: data.role === 2 ? UserRole.Admin : UserRole.Volunteer,  
   status: data.status as 'pending' | 'active' | 'inactive',
   phone: data.phone,
   joinDate: data.joinDate,
@@ -102,6 +103,14 @@ export const authService = {
   },
 
   isAuthenticated: (): boolean => {
-    return this.getCurrentUser() !== null && this.getToken() !== null;
+    const currentUser = authService.getCurrentUser();
+    const token = authService.getToken();
+    return currentUser !== null && token !== null;
   },
 };
+    
+  
+  
+  
+  
+  

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VolunteerManagement.BusinessLayer;
 using VolunteerManagement.BusinessLayer.Interfaces;
@@ -18,6 +19,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult GetAllUsers()
         {
             var users = _userAction.GetAllUsers();
@@ -25,6 +27,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public IActionResult GetUserById(int id)
         {
             var user = _userAction.GetUserById(id);
@@ -36,6 +39,7 @@ namespace VolunteerManagement.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public IActionResult UpdateUser(int id, [FromBody] UserDto userData)
         {
             if (id != userData.Id)
@@ -52,8 +56,33 @@ namespace VolunteerManagement.API.Controllers
             
             return Ok(result);
         }
-
+        
+        [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
+        public IActionResult CreateUser([FromBody] CreateUserDto userData)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+        
+                return BadRequest(new { message = "Validation failed", errors = errors });
+            }
+    
+            var result = _userAction.CreateUser(userData);
+    
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result);
+            }
+    
+            return Ok(result);
+        }
+        
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult DeleteUser(int id)
         {
             var result = _userAction.DeleteUser(id);
@@ -65,7 +94,9 @@ namespace VolunteerManagement.API.Controllers
             
             return Ok(result);
         }
+
         [HttpPut("{id}/change-password")]
+        [Authorize]
         public IActionResult ChangePassword(int id, [FromBody] ChangePasswordDto passwordData)
         {
             if (id != passwordData.UserId)
@@ -82,6 +113,5 @@ namespace VolunteerManagement.API.Controllers
     
             return Ok(result);
         }
-        
     }
 }
