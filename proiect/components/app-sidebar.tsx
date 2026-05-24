@@ -94,17 +94,21 @@ export function AppSidebar() {
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
-                    asChild
-                    isActive={
-                      pathname === item.href ||
-                      (item.href !== "/dashboard" &&
-                        pathname.startsWith(item.href))
-                    }
-                    tooltip={item.title}
+                      className="!text-white"
+                      asChild
+                      isActive={
+                          pathname === item.href ||
+                          (item.href !== "/dashboard" &&
+                              pathname.startsWith(item.href))
+                      }
+                      tooltip={item.title}
                   >
-                    <Link href={item.href}>
-                      <item.icon className="size-4" />
-                      <span>{item.title}</span>
+                    <Link
+                        href={item.href}
+                        className="flex items-center gap-2 !text-white"
+                    >
+                      <item.icon className="size-4 !text-white" />
+                      <span className="!text-white">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

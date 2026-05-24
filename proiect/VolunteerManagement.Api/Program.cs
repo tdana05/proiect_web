@@ -4,6 +4,11 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+// connection string setup
+VolunteerManagement.DataAccess.DbSession.ConnectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection") ??
+    "Server=localhost\\SQLEXPRESS;Database=VolunteerManagementDB;Trusted_Connection=True;MultipleActiveResultSets=true;Encrypt=False;";
+
 
 // Add services to the container.
 builder.Services.AddControllers();
