@@ -21,20 +21,20 @@ export function DocumentFormModal({ document, onClose, onSave }: DocumentFormMod
     url: document?.url || '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (document) {
-      dataService.updateDocument(document.id, formData);
+      await dataService.updateDocument(document.id, formData);
     } else {
-      dataService.createDocument({
+      await dataService.createDocument({
         ...formData,
         type: 'application/pdf',
-        uploadedAt: new Date().toISOString(),
-        uploadedBy: 'admin',
+        uploadedBy: 1,
+        size: '1 MB',
       });
     }
-    
+
     onSave();
   };
 

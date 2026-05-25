@@ -22,24 +22,44 @@ export function ProjectFormModal({ project, onClose, onSave }: ProjectFormModalP
     status: project?.status || 'planning',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (project) {
-      dataService.updateProject(project.id, formData);
-    } else {
-      dataService.createProject(formData);
+
+    console.log("SUBMIT MERGE");
+
+    try {
+      if (project) {
+        await dataService.updateProject(project.id, formData);
+      } else {
+        await dataService.createProject({
+          ...formData,
+          volunteerIds: [],
+          memberIds: [],
+          leadId: 1,
+          progress: 0,
+        });
+      }
+
+      onSave();
+    } catch (error) {
+      console.log("EROARE:", error);
     }
-    
-    onSave();
   };
+  
+  
 
   return (
     <Modal
       title={project ? 'Editeaza Proiect' : 'Proiect Nou'}
       onClose={onClose}
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+          onSubmit={(e) => {
+            console.log("FORM SUBMIT");
+            handleSubmit(e);
+          }}
+          className="space-y-4"
+      >
         <Input
           label="Nume proiect"
           value={formData.name}
@@ -83,9 +103,12 @@ export function ProjectFormModal({ project, onClose, onSave }: ProjectFormModalP
           <Button type="button" variant="outline" onClick={onClose}>
             Anuleaza
           </Button>
-          <Button type="submit">
+          <button
+              type="submit"
+              className="bg-cyan-500 text-white px-4 py-2 rounded-lg"
+          >
             {project ? 'Salveaza' : 'Creeaza'}
-          </Button>
+          </button>
         </div>
       </form>
     </Modal>

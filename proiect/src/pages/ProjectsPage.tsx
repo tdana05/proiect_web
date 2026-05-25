@@ -23,7 +23,7 @@ export default function ProjectsPage() {
 
   const loadProjects = () => {
     const data = dataService.getProjects();
-    setProjects(data);
+    setProjects(Array.isArray(data) ? data : []);
   };
 
   const filteredProjects = projects.filter(p =>

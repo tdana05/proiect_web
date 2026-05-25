@@ -11,6 +11,10 @@ import { Plus, Search, FileText } from 'lucide-react';
 
 export default function DocumentsPage() {
   const { user } = useAuth();
+  
+  console.log(typeof user?.role);
+  console.log(user);
+  
   const [documents, setDocuments] = useState<Document[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -23,8 +27,8 @@ export default function DocumentsPage() {
     loadDocuments();
   }, []);
 
-  const loadDocuments = () => {
-    const data = dataService.getDocuments();
+  const loadDocuments = async () => {
+    const data = await dataService.getDocuments();
     setDocuments(data);
   };
 
@@ -40,16 +44,16 @@ export default function DocumentsPage() {
     setShowModal(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!isAdmin) return;
+
     if (window.confirm('Sigur doriti sa stergeti acest document?')) {
-      dataService.deleteDocument(id);
-      loadDocuments();
+      await dataService.deleteDocument(id);
+      await loadDocuments();
     }
   };
-
-  const handleSave = () => {
-    loadDocuments();
+  const handleSave = async () => {
+    await loadDocuments();
     setShowModal(false);
     setEditingDoc(null);
   };

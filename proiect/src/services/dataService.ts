@@ -1,4 +1,5 @@
 import apiClient from './apiClient';
+import { UserRole } from '../types'
 import {
   mockUsers, mockEvents, mockAnnouncements,
   mockTasks, mockHoursEntries, mockProjects, mockDocuments
@@ -22,7 +23,7 @@ const mapUserFromApi = (user: any): User => ({
   email: user.email,
   password: '',
   name: user.name,
-  role: user.role === 2 ? 'admin' : 'volunteer',
+  role: user.role === 1 ? UserRole.Admin : UserRole.Volunteer,
   status: user.status as 'pending' | 'active' | 'inactive',
   phone: user.phone,
   joinDate: user.joinDate,
@@ -349,61 +350,116 @@ export function getStats() {
 
 Object.assign(dataService, {
   // Projects
-  getProjects: (): Project[] => [...projects],
-  createProject: (data: Partial<Project>): Project => {
-    const np: Project = {
-      id: `p${Date.now()}`,
-      name: data.name || '',
-      description: data.description || '',
-      startDate: data.startDate || new Date().toISOString(),
-      endDate: data.endDate || new Date().toISOString(),
-      status: data.status || 'planning',
+  getProjects: async (): Promise<Project[]> => {
+    const response = await apiClient.get('/projects');
+
+    return response.data.map((project: any) => ({
+      id: project.id.toString(),
+      name: project.name,
+      description: project.description,
+      startDate: project.startDate,
+      endDate: project.endDate,
+      status: project.status?.toLowerCase(),
+      volunteerIds: project.volunteerIds || [],
+      leadId: project.leadId?.toString() || '',
+      memberIds: project.memberIds || [],
+      progress: project.progress || 0,
+    }));
+  },
+
+  createProject: async (data: Partial<Project>): Promise<Project> => {
+    const response = await apiClient.post('/projects', {
+      name: data.name,
+      description: data.description,
+      startDate: new Date(data.startDate!).toISOString(),
+      endDate: new Date(data.endDate!).toISOString(),
+      status: data.status,
       volunteerIds: data.volunteerIds || [],
-      leadId: data.leadId || '',
+      leadId: data.leadId || 1,
       memberIds: data.memberIds || [],
       progress: data.progress || 0,
-    };
-    projects = [np, ...projects];
-    return np;
+    });
+
+    return response.data;
   },
-  updateProject: (id: string, data: Partial<Project>): Project | null => {
-    const index = projects.findIndex(p => p.id === id);
-    if (index === -1) return null;
-    projects[index] = { ...projects[index], ...data };
-    return projects[index];
+
+  updateProject: async (
+      id: string,
+      data: Partial<Project>
+  ): Promise<Project | null> => {
+
+    await apiClient.put(`/projects/${id}`, {
+      id: parseInt(id),
+      name: data.name,
+      description: data.description,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      status: data.status,
+    });
+
+    const response = await apiClient.get(`/projects/${id}`);
+    return response.data;
   },
-  deleteProject: (id: string): boolean => {
-    const len = projects.length;
-    projects = projects.filter(p => p.id !== id);
-    return projects.length < len;
+
+  deleteProject: async (id: string): Promise<boolean> => {
+    await apiClient.delete(`/projects/${id}`);
+    return true;
   },
 
   // Documents
-  getDocuments: (): Document[] => [...documents],
-  createDocument: (data: Partial<Document>): Document => {
-    const nd: Document = {
-      id: `d${Date.now()}`,
-      name: data.name || '',
-      type: data.type || 'other',
-      uploadedBy: data.uploadedBy || 'admin',
-      uploadedAt: data.uploadedAt || new Date().toISOString(),
-      size: data.size || '0 KB',
-      category: data.category || 'other',
-      url: data.url || '',
-    };
-    documents = [nd, ...documents];
-    return nd;
+  getDocuments: async (): Promise<Document[]> => {
+    const response = await apiClient.get('/documents');
+
+    return response.data.map((doc: any) => ({
+      id: doc.id.toString(),
+      name: doc.name,
+      type: doc.type,
+      uploadedBy: doc.uploadedBy,
+      uploadedAt: doc.uploadedAt,
+      size: doc.size,
+      category: doc.category,
+      url: doc.url,
+    }));
   },
-  updateDocument: (id: string, data: Partial<Document>): Document | null => {
-    const index = documents.findIndex(d => d.id === id);
-    if (index === -1) return null;
-    documents[index] = { ...documents[index], ...data };
-    return documents[index];
+
+  createDocument: async (data: Partial<Document>): Promise<Document> => {
+    const response = await apiClient.post('/documents', {
+      name: data.name,
+      description: data.description,
+      type: data.type,
+      uploadedBy: data.uploadedBy,
+      uploadedAt: data.uploadedAt,
+      size: data.size,
+      category: data.category,
+      url: data.url,
+    });
+
+    return response.data;
   },
-  deleteDocument: (id: string): boolean => {
-    const len = documents.length;
-    documents = documents.filter(d => d.id !== id);
-    return documents.length < len;
+
+  updateDocument: async (
+      id: string,
+      data: Partial<Document>
+  ): Promise<Document | null> => {
+
+    await apiClient.put(`/documents/${id}`, {
+      id: parseInt(id),
+      name: data.name,
+      type: data.type,
+      uploadedBy: data.uploadedBy,
+      uploadedAt: data.uploadedAt,
+      size: data.size,
+      category: data.category,
+      url: data.url,
+    });
+
+    const response = await apiClient.get(`/documents/${id}`);
+    return response.data;
+  },
+
+  deleteDocument: async (id: string): Promise<boolean> => {
+    await apiClient.delete(`/documents/${id}`);
+    return true;
   },
 
   // Hours (alias)

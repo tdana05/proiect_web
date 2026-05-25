@@ -73,7 +73,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -89,13 +88,12 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly", policy => 
-        policy.RequireClaim("roleId", "2"));  // 2 = Admin
-    
-    options.AddPolicy("VolunteerOnly", policy => 
-        policy.RequireClaim("roleId", "1"));  // 1 = Volunteer
-});
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireClaim("role", "admin"));
 
+    options.AddPolicy("VolunteerOnly", policy =>
+        policy.RequireClaim("role", "volunteer"));
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

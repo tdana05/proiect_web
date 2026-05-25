@@ -11,7 +11,9 @@ namespace VolunteerManagement.DataAccess.Context
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(DbSession.ConnectionString);
+            optionsBuilder.UseSqlServer(
+                "Server=localhost,1433;Database=VolunteerManagementDB;User Id=sa;Password=Parola123!;TrustServerCertificate=True;"
+            );
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

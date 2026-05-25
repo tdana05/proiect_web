@@ -33,7 +33,14 @@ const mapToUser = (data: any): User => ({
   email: data.email,
   password: '',
   name: data.name,
-  role: data.role === 2 ? UserRole.Admin : UserRole.Volunteer,  
+  
+  role:
+      data.role === "admin" ||
+      data.role === 2 ||
+      data.role === "2"
+          ? UserRole.Admin
+          : UserRole.Volunteer,
+  
   status: data.status as 'pending' | 'active' | 'inactive',
   phone: data.phone,
   joinDate: data.joinDate,

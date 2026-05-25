@@ -88,6 +88,7 @@ export interface Project {
 export interface Document {
   id: string
   name: string
+  description?: string
   type: "pdf" | "doc" | "spreadsheet" | "image" | "other"
   uploadedBy: string
   uploadedAt: string

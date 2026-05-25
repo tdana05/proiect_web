@@ -55,7 +55,11 @@ export function DocumentCard({ document, isAdmin, onEdit, onDelete }: DocumentCa
       </div>
 
       <div className="flex gap-2">
-        <Button variant="outline" size="sm">
+        <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.open(document.url, '_blank')}
+        >
           <Download className="mr-1 h-3 w-3" />
           Descarca
         </Button>
