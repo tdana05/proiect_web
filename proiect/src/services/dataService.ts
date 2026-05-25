@@ -359,7 +359,7 @@ Object.assign(dataService, {
       description: project.description,
       startDate: project.startDate,
       endDate: project.endDate,
-      status: project.status,
+      status: project.status?.toLowerCase(),
       volunteerIds: project.volunteerIds || [],
       leadId: project.leadId?.toString() || '',
       memberIds: project.memberIds || [],
@@ -371,9 +371,13 @@ Object.assign(dataService, {
     const response = await apiClient.post('/projects', {
       name: data.name,
       description: data.description,
-      startDate: data.startDate,
-      endDate: data.endDate,
+      startDate: new Date(data.startDate!).toISOString(),
+      endDate: new Date(data.endDate!).toISOString(),
       status: data.status,
+      volunteerIds: data.volunteerIds || [],
+      leadId: data.leadId || 1,
+      memberIds: data.memberIds || [],
+      progress: data.progress || 0,
     });
 
     return response.data;
@@ -421,6 +425,7 @@ Object.assign(dataService, {
   createDocument: async (data: Partial<Document>): Promise<Document> => {
     const response = await apiClient.post('/documents', {
       name: data.name,
+      description: data.description,
       type: data.type,
       uploadedBy: data.uploadedBy,
       uploadedAt: data.uploadedAt,
