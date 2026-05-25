@@ -24,7 +24,7 @@ namespace VolunteerManagement.BusinessLayer.Core
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userId),
                 new Claim(JwtRegisteredClaimNames.Email, email),
-                new Claim(ClaimTypes.Role, roleString),
+                new Claim("role", roleString),
                 new Claim("roleId", roleId.ToString()),
                 new Claim("roleName", roleString),
                 new Claim("userId", userId),
