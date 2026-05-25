@@ -11,14 +11,17 @@ import { Plus, Search, FileText } from 'lucide-react';
 
 export default function DocumentsPage() {
   const { user } = useAuth();
+  
+  console.log(typeof user?.role);
   console.log(user);
+  
   const [documents, setDocuments] = useState<Document[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingDoc, setEditingDoc] = useState<Document | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>('all');
 
-  const isAdmin = user?.role === 1;
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
     loadDocuments();
